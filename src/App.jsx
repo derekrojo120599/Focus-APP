@@ -4,18 +4,19 @@ import {
 } from "recharts";
 import {
   Timer, ListTodo, BarChart3, Plus, Play, Pause, RotateCcw,
-  Check, X, Trash2, Settings2, Sparkles,
+  Check, X, Trash2, Settings2, Sparkles, Leaf,
 } from "lucide-react";
 
 /* ---------------------------------------------------------
    Tokens
-   ink:        #132420  deep pine background
-   card:       #1B322C  panel surface
-   parchment:  #F3ECDD  primary text on dark
-   amber:      #E7A33E  primary accent / neutral mood
-   moss:       #6FA96C  success / happy mood
+   ink:        #0F211C  deep pine background
+   card:       #16281F  panel surface
+   card-line:  #26402F  hairline border
+   parchment:  #F4EEDF  primary text on dark
+   amber:      #E7A33E  pomodoro / neutral mood
+   moss:       #6FA96C  stats / success / happy mood
    clay:       #C3572E  danger / sad mood
-   periwinkle: #93A8D6  secondary accent
+   periwinkle: #93A8D6  tasks / secondary accent
 --------------------------------------------------------- */
 
 const DEFAULT_CATEGORIES = [
@@ -36,27 +37,22 @@ const MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep"
 function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
-
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
-
 function monthKey(dateStr) {
   return dateStr ? dateStr.slice(0, 7) : "";
 }
-
 function monthLabel(key) {
   const [y, m] = key.split("-");
   return `${MONTHS_ES[parseInt(m, 10) - 1]} ${y.slice(2)}`;
 }
-
 function withinDays(dateStr, days) {
   const d = new Date(dateStr + "T00:00:00");
   const now = new Date();
   const diff = (now - d) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= days;
 }
-
 function getStage(completedCount) {
   if (completedCount >= 50) return { name: "Árbol radiante", level: 5 };
   if (completedCount >= 30) return { name: "Árbol", level: 4 };
@@ -64,7 +60,6 @@ function getStage(completedCount) {
   if (completedCount >= 5) return { name: "Brote", level: 2 };
   return { name: "Semilla", level: 1 };
 }
-
 function getMood(tasks) {
   const recent = tasks.filter(
     (t) => (t.status === "completed" || t.status === "missed") && withinDays(t.date, 30)
@@ -81,77 +76,86 @@ const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 
 /* ---------------------------------------------------------
    Companion creature — SVG, grows with completed tasks,
-   expression follows recent success rate
+   expression + posture follow recent success rate
 --------------------------------------------------------- */
-function Companion({ level, mood, size = 168 }) {
+function Companion({ level, mood, size = 176 }) {
   const bodyColor = MOOD_COLOR[mood];
   const leafPairs = Math.min(level, 4);
   const showFlower = level >= 5;
   const bodyR = 30 + level * 3;
+  const tilt = mood === "sad" ? -6 : mood === "happy" ? 2 : 0;
 
   return (
-    <svg width={size} height={size} viewBox="0 0 200 200" className="companion-svg">
-      <path d="M 70 168 L 130 168 L 122 190 L 78 190 Z" fill="#8B5E3C" />
-      <rect x="66" y="160" width="68" height="10" rx="3" fill="#6E4A2F" />
-      <line x1="100" y1="160" x2="100" y2="120" stroke="#4F7A4C" strokeWidth="5" strokeLinecap="round" />
-      {Array.from({ length: leafPairs }).map((_, i) => {
-        const y = 152 - i * 14;
-        return (
-          <g key={i}>
-            <path d={`M 100 ${y} Q 78 ${y - 8} 82 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#5B8C5A" />
-            <path d={`M 100 ${y} Q 122 ${y - 8} 118 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#6FA96C" />
-          </g>
-        );
-      })}
-      {showFlower && (
-        <g>
-          <circle cx="82" cy="60" r="7" fill="#E7A33E" />
-          <circle cx="118" cy="58" r="7" fill="#E7A33E" />
-          <circle cx="100" cy="46" r="7" fill="#E7A33E" />
-        </g>
-      )}
-      <circle cx="100" cy="90" r={bodyR} fill={bodyColor} className="companion-body" />
-      <circle cx="100" cy="90" r={bodyR} fill="url(#sheen)" opacity="0.25" />
-      <defs>
-        <radialGradient id="sheen" cx="35%" cy="30%" r="60%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx={100 - bodyR * 0.4} cy="86" r="5" fill="#132420" />
-      <circle cx={100 + bodyR * 0.4} cy="86" r="5" fill="#132420" />
+    <div className={`companion-stage mood-${mood}`}>
+      <div className="companion-glow" style={{ background: `radial-gradient(circle, ${bodyColor}55 0%, transparent 70%)` }} />
       {mood === "happy" && (
-        <path d={`M ${100 - bodyR * 0.35} ${98} Q 100 ${112} ${100 + bodyR * 0.35} ${98}`} stroke="#132420" strokeWidth="4" fill="none" strokeLinecap="round" />
+        <div className="sparkles">
+          <span className="spark s1" /><span className="spark s2" /><span className="spark s3" />
+        </div>
       )}
-      {mood === "neutral" && (
-        <line x1={100 - bodyR * 0.3} y1="102" x2={100 + bodyR * 0.3} y2="102" stroke="#132420" strokeWidth="4" strokeLinecap="round" />
-      )}
-      {mood === "sad" && (
-        <path d={`M ${100 - bodyR * 0.35} ${106} Q 100 ${94} ${100 + bodyR * 0.35} ${106}`} stroke="#132420" strokeWidth="4" fill="none" strokeLinecap="round" />
-      )}
-    </svg>
+      <svg width={size} height={size} viewBox="0 0 200 200" className="companion-svg" style={{ "--tilt": `${tilt}deg` }}>
+        <ellipse cx="100" cy="192" rx="42" ry="6" fill="#000" opacity="0.28" />
+        <path d="M 70 168 L 130 168 L 122 190 L 78 190 Z" fill="#8B5E3C" />
+        <path d="M 70 168 L 130 168 L 127 176 L 73 176 Z" fill="#71492E" opacity="0.6" />
+        <rect x="66" y="160" width="68" height="10" rx="3" fill="#6E4A2F" />
+        <g className="companion-plant">
+          <line x1="100" y1="160" x2="100" y2="120" stroke="#4F7A4C" strokeWidth="5" strokeLinecap="round" />
+          {Array.from({ length: leafPairs }).map((_, i) => {
+            const y = 152 - i * 14;
+            return (
+              <g key={i}>
+                <path d={`M 100 ${y} Q 78 ${y - 8} 82 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#5B8C5A" />
+                <path d={`M 100 ${y} Q 122 ${y - 8} 118 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#6FA96C" />
+              </g>
+            );
+          })}
+          {showFlower && (
+            <g>
+              <circle cx="82" cy="60" r="7" fill="#E7A33E" />
+              <circle cx="118" cy="58" r="7" fill="#E7A33E" />
+              <circle cx="100" cy="46" r="7" fill="#E7A33E" />
+            </g>
+          )}
+          <circle cx="100" cy="90" r={bodyR} fill={bodyColor} className="companion-body" />
+          <circle cx="100" cy="90" r={bodyR} fill="url(#sheen)" opacity="0.25" />
+          <defs>
+            <radialGradient id="sheen" cx="35%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx={100 - bodyR * 0.4} cy="86" r="5" fill="#0F211C" />
+          <circle cx={100 + bodyR * 0.4} cy="86" r="5" fill="#0F211C" />
+          {mood === "happy" && (
+            <path d={`M ${100 - bodyR * 0.35} ${98} Q 100 ${112} ${100 + bodyR * 0.35} ${98}`} stroke="#0F211C" strokeWidth="4" fill="none" strokeLinecap="round" />
+          )}
+          {mood === "neutral" && (
+            <line x1={100 - bodyR * 0.3} y1="102" x2={100 + bodyR * 0.3} y2="102" stroke="#0F211C" strokeWidth="4" strokeLinecap="round" />
+          )}
+          {mood === "sad" && (
+            <path d={`M ${100 - bodyR * 0.35} ${106} Q 100 ${94} ${100 + bodyR * 0.35} ${106}`} stroke="#0F211C" strokeWidth="4" fill="none" strokeLinecap="round" />
+          )}
+        </g>
+      </svg>
+    </div>
   );
 }
 
 /* ---------------------------------------------------------
-   Persistence — localStorage (per-browser, no backend needed)
+   Persistence — localStorage
 --------------------------------------------------------- */
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
   }
 }
-
 function saveData(data) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) {
-    // storage unavailable or full — fail silently
-  }
+  } catch (e) {}
 }
 
 /* ---------------------------------------------------------
@@ -173,70 +177,67 @@ export default function App() {
 
   const completedCount = useMemo(() => tasks.filter((t) => t.status === "completed").length, [tasks]);
   const missedCount = useMemo(() => tasks.filter((t) => t.status === "missed").length, [tasks]);
+  const pendingCount = useMemo(() => tasks.filter((t) => t.status === "pending").length, [tasks]);
   const stage = getStage(completedCount);
   const mood = getMood(tasks);
-
   const catById = useCallback((id) => categories.find((c) => c.id === id), [categories]);
 
   return (
     <div className="app-root">
-      <div className="shell">
-        <div className="header-row">
-          <div>
-            <div className="title">🌱 Refugio de Enfoque</div>
-            <div className="subtitle">Pomodoro, tareas y un compañero que crece contigo</div>
+      <div className="grain" />
+      <div className="app-shell">
+        <aside className="sidebar">
+          <div className="brand">
+            <span className="brand-mark"><Leaf size={18} /></span>
+            <div>
+              <div className="title">Refugio de Enfoque</div>
+              <div className="subtitle">crece una sesión a la vez</div>
+            </div>
           </div>
-          <div className="nav">
+
+          <nav className="nav">
             <button className={`nav-btn ${tab === "pomodoro" ? "active" : ""}`} onClick={() => setTab("pomodoro")}>
-              <Timer size={15} /> Pomodoro
+              <Timer size={16} /> Pomodoro
             </button>
             <button className={`nav-btn ${tab === "tasks" ? "active" : ""}`} onClick={() => setTab("tasks")}>
-              <ListTodo size={15} /> Tareas
+              <ListTodo size={16} /> Tareas {pendingCount > 0 && <span className="nav-count">{pendingCount}</span>}
             </button>
             <button className={`nav-btn ${tab === "stats" ? "active" : ""}`} onClick={() => setTab("stats")}>
-              <BarChart3 size={15} /> Estadísticas
+              <BarChart3 size={16} /> Estadísticas
             </button>
+          </nav>
+
+          <div className="companion-card">
+            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero</span>
+            <Companion level={stage.level} mood={mood} />
+            <div className="stage-name">{stage.name}</div>
+            <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
+              <Sparkles size={12} /> Ánimo {MOOD_LABEL[mood]}
+            </span>
           </div>
-        </div>
 
-        <CompanionCard stage={stage} mood={mood} completedCount={completedCount} missedCount={missedCount} />
+          <div className="quick-stats">
+            <div className="qstat"><span className="qnum" style={{ color: "#6FA96C" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
+            <div className="qstat"><span className="qnum" style={{ color: "#C3572E" }}>{missedCount}</span><span className="qlabel">perdidas</span></div>
+            <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">éxito</span></div>
+          </div>
+        </aside>
 
-        {tab === "pomodoro" && (
-          <PomodoroPanel
-            settings={settings}
-            setSettings={setSettings}
-            tasks={tasks.filter((t) => t.status === "pending")}
-            sessionsCompleted={sessionsCompleted}
-            setSessionsCompleted={setSessionsCompleted}
-          />
-        )}
-
-        {tab === "tasks" && (
-          <TasksPanel tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} catById={catById} />
-        )}
-
-        {tab === "stats" && <StatsPanel tasks={tasks} categories={categories} />}
-      </div>
-    </div>
-  );
-}
-
-function CompanionCard({ stage, mood, completedCount, missedCount }) {
-  const total = completedCount + missedCount;
-  const rate = total ? Math.round((completedCount / total) * 100) : 0;
-  return (
-    <div className="card companion-card">
-      <Companion level={stage.level} mood={mood} />
-      <div className="companion-info">
-        <div className="stage-name">{stage.name}</div>
-        <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
-          <Sparkles size={12} /> Ánimo {MOOD_LABEL[mood]}
-        </span>
-        <div className="stat-row">
-          <div className="stat"><span className="stat-num" style={{ color: "#6FA96C" }}>{completedCount}</span><span className="stat-label">completadas</span></div>
-          <div className="stat"><span className="stat-num" style={{ color: "#C3572E" }}>{missedCount}</span><span className="stat-label">perdidas</span></div>
-          <div className="stat"><span className="stat-num">{rate}%</span><span className="stat-label">tasa de éxito</span></div>
-        </div>
+        <main className="content">
+          {tab === "pomodoro" && (
+            <PomodoroPanel
+              settings={settings}
+              setSettings={setSettings}
+              tasks={tasks.filter((t) => t.status === "pending")}
+              sessionsCompleted={sessionsCompleted}
+              setSessionsCompleted={setSessionsCompleted}
+            />
+          )}
+          {tab === "tasks" && (
+            <TasksPanel tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} catById={catById} />
+          )}
+          {tab === "stats" && <StatsPanel tasks={tasks} categories={categories} />}
+        </main>
       </div>
     </div>
   );
@@ -250,7 +251,6 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
   const [linkedTaskId, setLinkedTaskId] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef(null);
-
   const durationsMin = { work: settings.work, short: settings.short, long: settings.long };
 
   useEffect(() => {
@@ -278,11 +278,15 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
     return () => clearInterval(intervalRef.current);
   }, [running, mode, setSessionsCompleted]);
 
+  const total = durationsMin[mode] * 60;
+  const pct = total ? ((total - secondsLeft) / total) * 100 : 0;
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
+  const modeColor = mode === "work" ? "#E7A33E" : mode === "short" ? "#93A8D6" : "#6FA96C";
 
   return (
-    <div className="card">
+    <div className="card accent-amber">
+      <span className="eyebrow">sesión de enfoque</span>
       <div className="timer-wrap">
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
@@ -290,7 +294,19 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
           <button className={`mode-pill ${mode === "long" ? "active" : ""}`} onClick={() => setMode("long")}>Descanso largo</button>
         </div>
 
-        <div className="time-display">{mm}:{ss}</div>
+        <div className="ring-wrap">
+          <svg className="ring" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="88" fill="none" stroke="#20362B" strokeWidth="10" />
+            <circle
+              cx="100" cy="100" r="88" fill="none" stroke={modeColor} strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 88}
+              strokeDashoffset={2 * Math.PI * 88 * (1 - pct / 100)}
+              transform="rotate(-90 100 100)"
+              className="ring-progress"
+            />
+          </svg>
+          <div className="time-display">{mm}:{ss}</div>
+        </div>
 
         <div className="timer-controls">
           <button className="btn btn-primary" onClick={() => setRunning((r) => !r)}>
@@ -314,7 +330,7 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
           </div>
         )}
 
-        <div className="stat-row" style={{ marginTop: 20 }}>
+        <div className="stat-row" style={{ marginTop: 22 }}>
           <div className="stat"><span className="stat-num">{sessionsCompleted}</span><span className="stat-label">sesiones de enfoque completadas</span></div>
         </div>
 
@@ -366,15 +382,12 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
     setTitle("");
     setDuration(30);
   }
-
   function setStatus(id, status) {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, status: t.status === status ? "pending" : status } : t)));
   }
-
   function removeTask(id) {
     setTasks((ts) => ts.filter((t) => t.id !== id));
   }
-
   function addCategory() {
     if (!newCatName.trim()) return;
     const id = newCatName.trim().toLowerCase().replace(/\s+/g, "-") + "-" + uid().slice(0, 4);
@@ -389,8 +402,8 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
 
   return (
     <>
-      <div className="card">
-        <label className="field-label">Nueva tarea</label>
+      <div className="card accent-peri">
+        <span className="eyebrow" style={{ color: "#93A8D6" }}>nueva tarea</span>
         <div className="form-grid">
           <div>
             <label className="field-label">Título</label>
@@ -429,7 +442,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card accent-peri">
         <div className="filters">
           <button className={`filter-chip ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>Todas</button>
           {categories.map((c) => (
@@ -444,6 +457,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
           const overdue = t.status === "pending" && t.date < todayISO();
           return (
             <div className="task-row" key={t.id}>
+              <div className="task-bar" style={{ background: cat ? cat.color : "#2A473C" }} />
               <div style={{ flex: 1 }}>
                 <div className="task-title">{t.title}</div>
                 <div className="task-meta">
@@ -498,41 +512,41 @@ function StatsPanel({ tasks, categories }) {
 
   return (
     <>
-      <div className="card chart-card">
-        <label className="field-label">Tareas completadas vs. perdidas por mes</label>
+      <div className="card accent-moss chart-card">
+        <span className="eyebrow" style={{ color: "#6FA96C" }}>progreso mensual</span>
         {monthly.length === 0 ? (
           <div className="empty">Aún no hay tareas completadas o perdidas para graficar.</div>
         ) : (
-          <div style={{ width: "100%", height: 280, marginTop: 12 }}>
+          <div style={{ width: "100%", height: 300, marginTop: 12 }}>
             <ResponsiveContainer>
               <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A473C" />
-                <XAxis dataKey="mes" stroke="#9DB6AA" fontSize={12} />
-                <YAxis stroke="#9DB6AA" fontSize={12} allowDecimals={false} />
-                <Tooltip contentStyle={{ background: "#1B322C", border: "1px solid #2A473C", borderRadius: 10, fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#26402F" vertical={false} />
+                <XAxis dataKey="mes" stroke="#9DB6AA" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9DB6AA" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "#16281F", border: "1px solid #26402F", borderRadius: 10, fontSize: 12 }} cursor={{ fill: "#20362B" }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="completadas" fill="#6FA96C" radius={[6, 6, 0, 0]} name="Completadas" />
-                <Bar dataKey="perdidas" fill="#C3572E" radius={[6, 6, 0, 0]} name="Perdidas" />
+                <Bar dataKey="completadas" fill="#6FA96C" radius={[6, 6, 0, 0]} name="Completadas" maxBarSize={40} />
+                <Bar dataKey="perdidas" fill="#C3572E" radius={[6, 6, 0, 0]} name="Perdidas" maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
 
-      <div className="card">
-        <label className="field-label">Por categoría</label>
+      <div className="card accent-moss">
+        <span className="eyebrow" style={{ color: "#6FA96C" }}>por categoría</span>
         {byCategory.length === 0 && <div className="empty">Sin datos todavía.</div>}
         {byCategory.map((c) => {
           const total = c.completadas + c.perdidas;
           const pct = total ? Math.round((c.completadas / total) * 100) : 0;
           return (
-            <div key={c.id} style={{ marginTop: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+            <div key={c.id} className="cat-row">
+              <div className="cat-row-head">
                 <span className="cat-chip" style={{ background: c.color + "22", color: c.color }}>{c.name}</span>
-                <span className="mono" style={{ color: "#9DB6AA" }}>{c.completadas} completadas · {c.perdidas} perdidas · {pct}%</span>
+                <span className="mono cat-row-meta">{c.completadas} completadas · {c.perdidas} perdidas · {pct}%</span>
               </div>
-              <div style={{ height: 8, background: "#21392F", borderRadius: 999, overflow: "hidden" }}>
-                <div style={{ width: `${pct}%`, height: "100%", background: c.color }} />
+              <div className="progress-track">
+                <div className="progress-fill" style={{ width: `${pct}%`, background: c.color }} />
               </div>
             </div>
           );
