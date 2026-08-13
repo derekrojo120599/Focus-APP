@@ -47,6 +47,7 @@ html, body, #root { margin: 0; padding: 0; min-height: 100%; }
 .nav-btn:hover { color: #F4EEDF; background: #1B2F25; }
 .nav-btn.active { background: #1E3A2C; color: #F4EEDF; border-left-color: #E7A33E; }
 .nav-count { margin-left: auto; font-size: 10px; font-family: 'JetBrains Mono', monospace; background: #26402F; color: #B9CDC1; padding: 1px 7px; border-radius: 999px; }
+.nav-count-live { background: transparent; color: #E7A33E; font-size: 14px; padding: 0; animation: aura-pulse 1.6s ease-in-out infinite; }
 
 @media (max-width: 900px) {
   .nav { flex-direction: row; overflow-x: auto; }
@@ -113,6 +114,10 @@ html, body, #root { margin: 0; padding: 0; min-height: 100%; }
 
 /* ---------------- Pomodoro ---------------- */
 .timer-wrap { display: flex; flex-direction: column; align-items: center; padding: 6px 10px 4px; }
+.hint-note { font-size: 12px; color: #7FA396; text-align: center; max-width: 420px; margin-bottom: 18px; line-height: 1.5; }
+.task-session-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 18px; text-align: center; }
+.session-alert { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #E7A33E; background: #E7A33E1a; padding: 8px 14px; border-radius: 10px; margin-top: 16px; }
+.session-alert.danger { color: #C3572E; background: #C3572E1a; }
 .mode-pills { display: flex; gap: 8px; margin-bottom: 22px; }
 .mode-pill { padding: 6px 14px; border-radius: 999px; font-size: 12px; border: 1px solid #26402F; background: #1B2F25; color: #9DB6AA; cursor: pointer; transition: all .15s ease; }
 .mode-pill.active { background: #E7A33E; color: #0F211C; border-color: #E7A33E; font-weight: 600; }
@@ -124,6 +129,11 @@ html, body, #root { margin: 0; padding: 0; min-height: 100%; }
 
 .timer-controls { display: flex; gap: 10px; margin-top: 24px; }
 .btn { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: transform .1s ease, filter .15s ease; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none !important; transform: none !important; }
+
+.alert-banner { display: flex; align-items: center; gap: 10px; background: #E7A33E1f; border: 1px solid #E7A33E55; color: #F4EEDF; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; }
+.alert-banner svg { color: #E7A33E; flex-shrink: 0; }
+.alert-close { margin-left: auto; background: none; border: none; color: #9DB6AA; cursor: pointer; padding: 2px; }
 .btn:hover { filter: brightness(1.08); }
 .btn:active { transform: scale(0.97); }
 .btn-primary { background: #E7A33E; color: #0F211C; }
@@ -150,12 +160,14 @@ label.field-label { font-size: 11px; color: #7FA396; margin-bottom: 4px; display
 .filter-chip.active { background: #93A8D6; color: #0F211C; border-color: #93A8D6; font-weight: 600; }
 
 .task-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 16px; border-radius: 12px; background: #1B2F25; border: 1px solid #26402F; overflow: hidden; }
+.task-row-active { border-color: #E7A33E88; box-shadow: 0 0 0 1px #E7A33E33; }
 .task-row + .task-row { margin-top: 8px; }
 .task-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
 .task-title { font-weight: 600; font-size: 14px; }
 .task-meta { font-size: 11px; color: #7FA396; margin-top: 3px; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
 .task-actions { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
 .icon-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #26402F; background: #16281F; color: #9DB6AA; cursor: pointer; transition: all .15s ease; }
+.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .icon-btn:hover { filter: brightness(1.15); }
 .icon-btn.completed-active { background: #6FA96C; color: #0F211C; border-color: #6FA96C; }
 .icon-btn.missed-active { background: #C3572E; color: #F4EEDF; border-color: #C3572E; }

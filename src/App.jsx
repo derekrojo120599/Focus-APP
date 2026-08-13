@@ -4,7 +4,7 @@ import {
 } from "recharts";
 import {
   Timer, ListTodo, BarChart3, Plus, Play, Pause, RotateCcw,
-  Check, X, Trash2, Settings2, Sparkles, Leaf,
+  Check, X, Trash2, Settings2, Sparkles, Leaf, AlarmClock, Ban,
 } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -34,6 +34,10 @@ const STORAGE_KEY = "focus-companion-data-v1";
 
 const MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
+const MAX_EXTENSIONS = 3;
+const EXTENSION_MINUTES = 15;
+const WARNING_SECONDS = 30 * 60;
+
 function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
@@ -53,6 +57,13 @@ function withinDays(dateStr, days) {
   const diff = (now - d) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= days;
 }
+function fmtClock(totalSeconds) {
+  const s = Math.max(0, totalSeconds);
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(Math.floor(s % 60)).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
 const STAGE_NAMES = [
   "Semilla", "Brote", "Retoño", "Arbusto", "Árbol joven",
   "Árbol floreciente", "Árbol en flor", "Árbol frondoso", "Árbol con frutos", "Árbol dorado",
@@ -91,10 +102,6 @@ const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 /* ---------------------------------------------------------
    Companion creature — SVG, evolves through 21 forms
    (one every 10 completed tasks, up to level 20 / 200 tasks).
-   Growth is parametric: leaves → flowers → fruit → aura
-   rings → orbiting sparkles → crown, layered on top of the
-   mood-driven face/posture so habit progress and day-to-day
-   mood read as two separate signals.
 --------------------------------------------------------- */
 function polar(cx, cy, r, deg) {
   const rad = (deg * Math.PI) / 180;
@@ -128,7 +135,6 @@ function Companion({ level, mood, size = 176 }) {
         <path d="M 70 168 L 130 168 L 127 176 L 73 176 Z" fill="#71492E" opacity="0.6" />
         <rect x="66" y="160" width="68" height="10" rx="3" fill="#6E4A2F" />
 
-        {/* aura rings — unlock at level 12+, one more every 2 levels */}
         {Array.from({ length: auraRings }).map((_, i) => (
           <circle
             key={`ring-${i}`} cx="100" cy="90" r={bodyR + 26 + i * 13} fill="none"
@@ -137,7 +143,6 @@ function Companion({ level, mood, size = 176 }) {
           />
         ))}
 
-        {/* orbiting sparkles — unlock at level 15+, count grows to 6 */}
         {Array.from({ length: orbitCount }).map((_, i) => {
           const [x, y] = polar(100, 88, bodyR + 42, (360 / orbitCount) * i - 90);
           return (
@@ -157,20 +162,17 @@ function Companion({ level, mood, size = 176 }) {
             );
           })}
 
-          {/* flowers — unlock at level 5+, ring around the upper body */}
           {Array.from({ length: flowerCount }).map((_, i) => {
             const [x, y] = polar(100, 82, bodyR + 14, (360 / flowerCount) * i - 90);
             return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#E7A33E" stroke="#0F211C" strokeWidth="0.5" />;
           })}
 
-          {/* fruits — unlock at level 10+, lower arc around the body */}
           {Array.from({ length: fruitCount }).map((_, i) => {
             const angle = 60 + (60 / Math.max(fruitCount - 1, 1)) * i;
             const [x, y] = polar(100, 92, bodyR + 6, angle);
             return <circle key={`fruit-${i}`} cx={x} cy={y} r="4.5" fill="#D9857A" />;
           })}
 
-          {/* crown — unlocks at level 18+ (near-max devotion) */}
           {hasCrown && (
             <g transform={`translate(100, ${64 - bodyR})`}>
               <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="#F4D58D" stroke="#E7A33E" strokeWidth="1" />
@@ -222,6 +224,21 @@ function saveData(data) {
   } catch (e) {}
 }
 
+function requestNotifyPermission() {
+  try {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+  } catch (e) {}
+}
+function fireBrowserNotification(title, body) {
+  try {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body });
+    }
+  } catch (e) {}
+}
+
 /* ---------------------------------------------------------
    Main App
 --------------------------------------------------------- */
@@ -234,6 +251,8 @@ export default function App() {
   );
   const [settings, setSettings] = useState(initial.current?.settings || DEFAULT_SETTINGS);
   const [sessionsCompleted, setSessionsCompleted] = useState(initial.current?.sessionsCompleted || 0);
+  const [tick, setTick] = useState(0);
+  const [banner, setBanner] = useState(null);
 
   useEffect(() => {
     saveData({ tasks, categories, settings, sessionsCompleted });
@@ -242,9 +261,73 @@ export default function App() {
   const completedCount = useMemo(() => tasks.filter((t) => t.status === "completed").length, [tasks]);
   const missedCount = useMemo(() => tasks.filter((t) => t.status === "missed").length, [tasks]);
   const pendingCount = useMemo(() => tasks.filter((t) => t.status === "pending").length, [tasks]);
+  const activeTask = useMemo(() => tasks.find((t) => t.status === "in_progress") || null, [tasks]);
   const stage = getStage(completedCount);
   const mood = getMood(tasks);
   const catById = useCallback((id) => categories.find((c) => c.id === id), [categories]);
+
+  // live tick while a task session is running, so the countdown updates every second
+  useEffect(() => {
+    if (!activeTask) return;
+    const id = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [activeTask?.id, activeTask?.startedAt]);
+
+  // 30-minute-remaining warning — fires once per session (resets on extension)
+  useEffect(() => {
+    if (!activeTask) return;
+    const totalSeconds = activeTask.duration * 60;
+    const elapsed = Math.floor((Date.now() - activeTask.startedAt) / 1000);
+    const remaining = totalSeconds - elapsed;
+    if (remaining <= WARNING_SECONDS && remaining > 0 && !activeTask.notified30) {
+      const msg = `Quedan ${Math.ceil(remaining / 60)} min para el tiempo estimado de "${activeTask.title}".`;
+      fireBrowserNotification("⏰ Refugio de Enfoque", msg);
+      setBanner(msg);
+      setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, notified30: true } : t)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick, activeTask?.id]);
+
+  function startTask(id) {
+    if (activeTask) return; // only one active session at a time
+    requestNotifyPermission();
+    setBanner(null);
+    setTasks((ts) =>
+      ts.map((t) =>
+        t.id === id
+          ? { ...t, status: "in_progress", startedAt: Date.now(), extensionsUsed: 0, notified30: false }
+          : t
+      )
+    );
+    setTab("pomodoro");
+  }
+  function extendActiveTask() {
+    if (!activeTask || activeTask.extensionsUsed >= MAX_EXTENSIONS) return;
+    setTasks((ts) =>
+      ts.map((t) =>
+        t.id === activeTask.id
+          ? { ...t, duration: t.duration + EXTENSION_MINUTES, extensionsUsed: t.extensionsUsed + 1, notified30: false }
+          : t
+      )
+    );
+    setBanner(null);
+  }
+  function finishActiveTask(status) {
+    if (!activeTask) return;
+    setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, status } : t)));
+    setBanner(null);
+  }
+  function cancelActiveTask() {
+    if (!activeTask) return;
+    setTasks((ts) =>
+      ts.map((t) =>
+        t.id === activeTask.id
+          ? { ...t, status: "pending", startedAt: null, extensionsUsed: 0, notified30: false }
+          : t
+      )
+    );
+    setBanner(null);
+  }
 
   return (
     <div className="app-root">
@@ -261,7 +344,7 @@ export default function App() {
 
           <nav className="nav">
             <button className={`nav-btn ${tab === "pomodoro" ? "active" : ""}`} onClick={() => setTab("pomodoro")}>
-              <Timer size={16} /> Pomodoro
+              <Timer size={16} /> Pomodoro {activeTask && <span className="nav-count nav-count-live">●</span>}
             </button>
             <button className={`nav-btn ${tab === "tasks" ? "active" : ""}`} onClick={() => setTab("tasks")}>
               <ListTodo size={16} /> Tareas {pendingCount > 0 && <span className="nav-count">{pendingCount}</span>}
@@ -298,17 +381,32 @@ export default function App() {
         </aside>
 
         <main className="content">
+          {banner && (
+            <div className="alert-banner">
+              <AlarmClock size={15} />
+              <span>{banner}</span>
+              <button className="alert-close" onClick={() => setBanner(null)}><X size={13} /></button>
+            </div>
+          )}
+
           {tab === "pomodoro" && (
             <PomodoroPanel
               settings={settings}
               setSettings={setSettings}
-              tasks={tasks.filter((t) => t.status === "pending")}
               sessionsCompleted={sessionsCompleted}
               setSessionsCompleted={setSessionsCompleted}
+              activeTask={activeTask}
+              onExtend={extendActiveTask}
+              onComplete={() => finishActiveTask("completed")}
+              onMiss={() => finishActiveTask("missed")}
+              onCancel={cancelActiveTask}
             />
           )}
           {tab === "tasks" && (
-            <TasksPanel tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} catById={catById} />
+            <TasksPanel
+              tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories}
+              catById={catById} activeTaskId={activeTask?.id || null} onStart={startTask} onGoToSession={() => setTab("pomodoro")}
+            />
           )}
           {tab === "stats" && <StatsPanel tasks={tasks} categories={categories} />}
         </main>
@@ -317,12 +415,69 @@ export default function App() {
   );
 }
 
-/* ---------------- Pomodoro ---------------- */
-function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSessionsCompleted }) {
+/* ---------------- Task session (tied to a started task's estimated duration) ---------------- */
+function TaskSessionCard({ task, onExtend, onComplete, onMiss, onCancel }) {
+  const totalSeconds = task.duration * 60;
+  const elapsed = Math.floor((Date.now() - task.startedAt) / 1000);
+  const remaining = totalSeconds - elapsed;
+  const overtime = remaining < 0;
+  const nearEnd = !overtime && remaining <= WARNING_SECONDS;
+  const pct = Math.min(100, (elapsed / totalSeconds) * 100);
+  const ringColor = overtime || nearEnd ? "#C3572E" : "#E7A33E";
+  const extensionsLeft = MAX_EXTENSIONS - task.extensionsUsed;
+
+  return (
+    <div className="card accent-amber">
+      <span className="eyebrow">tarea en curso</span>
+      <div className="timer-wrap">
+        <div className="task-session-title">{task.title}</div>
+
+        <div className="ring-wrap">
+          <svg className="ring" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="88" fill="none" stroke="#20362B" strokeWidth="10" />
+            <circle
+              cx="100" cy="100" r="88" fill="none" stroke={ringColor} strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 88}
+              strokeDashoffset={2 * Math.PI * 88 * (1 - pct / 100)}
+              transform="rotate(-90 100 100)"
+              className="ring-progress"
+            />
+          </svg>
+          <div className="time-display">{overtime ? "+" : ""}{fmtClock(Math.abs(remaining))}</div>
+        </div>
+
+        {nearEnd && (
+          <div className="session-alert">
+            <AlarmClock size={14} /> Menos de 30 min para el tiempo estimado
+          </div>
+        )}
+        {overtime && (
+          <div className="session-alert danger">
+            <AlarmClock size={14} /> Tiempo estimado superado — agrega tiempo o cierra la tarea
+          </div>
+        )}
+
+        <div className="timer-controls" style={{ marginTop: 20 }}>
+          <button className="btn btn-ghost" onClick={onExtend} disabled={extensionsLeft <= 0}>
+            <Plus size={14} /> +{EXTENSION_MINUTES} min {extensionsLeft > 0 ? `(${extensionsLeft} disp.)` : "(sin extensiones)"}
+          </button>
+        </div>
+
+        <div className="timer-controls" style={{ marginTop: 10 }}>
+          <button className="btn btn-primary" onClick={onComplete}><Check size={15} /> Completar</button>
+          <button className="btn btn-ghost" onClick={onMiss}><X size={15} /> Perdida</button>
+          <button className="btn btn-ghost" onClick={onCancel}><Ban size={14} /> Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Free-form Pomodoro (no task attached) ---------------- */
+function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCompleted, activeTask, onExtend, onComplete, onMiss, onCancel }) {
   const [mode, setMode] = useState("work");
   const [secondsLeft, setSecondsLeft] = useState(settings.work * 60);
   const [running, setRunning] = useState(false);
-  const [linkedTaskId, setLinkedTaskId] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef(null);
   const durationsMin = { work: settings.work, short: settings.short, long: settings.long };
@@ -352,16 +507,19 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
     return () => clearInterval(intervalRef.current);
   }, [running, mode, setSessionsCompleted]);
 
+  if (activeTask) {
+    return <TaskSessionCard task={activeTask} onExtend={onExtend} onComplete={onComplete} onMiss={onMiss} onCancel={onCancel} />;
+  }
+
   const total = durationsMin[mode] * 60;
   const pct = total ? ((total - secondsLeft) / total) * 100 : 0;
-  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-  const ss = String(secondsLeft % 60).padStart(2, "0");
   const modeColor = mode === "work" ? "#E7A33E" : mode === "short" ? "#93A8D6" : "#6FA96C";
 
   return (
     <div className="card accent-amber">
-      <span className="eyebrow">sesión de enfoque</span>
+      <span className="eyebrow">pomodoro libre</span>
       <div className="timer-wrap">
+        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para arrancar su propio cronómetro con tiempo estimado.</div>
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
           <button className={`mode-pill ${mode === "short" ? "active" : ""}`} onClick={() => setMode("short")}>Descanso corto</button>
@@ -379,7 +537,7 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
               className="ring-progress"
             />
           </svg>
-          <div className="time-display">{mm}:{ss}</div>
+          <div className="time-display">{fmtClock(secondsLeft)}</div>
         </div>
 
         <div className="timer-controls">
@@ -393,16 +551,6 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
             <Settings2 size={15} />
           </button>
         </div>
-
-        {mode === "work" && (
-          <div className="task-select">
-            <label className="field-label">Tarea en la que estás trabajando (opcional)</label>
-            <select value={linkedTaskId} onChange={(e) => setLinkedTaskId(e.target.value)}>
-              <option value="">— sin vincular —</option>
-              {tasks.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
-            </select>
-          </div>
-        )}
 
         <div className="stat-row" style={{ marginTop: 22 }}>
           <div className="stat"><span className="stat-num">{sessionsCompleted}</span><span className="stat-label">sesiones de enfoque completadas</span></div>
@@ -433,7 +581,7 @@ function PomodoroPanel({ settings, setSettings, tasks, sessionsCompleted, setSes
 }
 
 /* ---------------- Tasks ---------------- */
-function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
+function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activeTaskId, onStart, onGoToSession }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(todayISO());
   const [duration, setDuration] = useState(30);
@@ -451,7 +599,10 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
     if (!title.trim()) return;
     setTasks((ts) => [
       ...ts,
-      { id: uid(), title: title.trim(), date, duration: Number(duration) || 0, type: catId, status: "pending", createdAt: Date.now() },
+      {
+        id: uid(), title: title.trim(), date, duration: Number(duration) || 0, type: catId, status: "pending",
+        createdAt: Date.now(), startedAt: null, extensionsUsed: 0, notified30: false,
+      },
     ]);
     setTitle("");
     setDuration(30);
@@ -488,7 +639,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">Duración (min)</label>
+            <label className="field-label">Duración estimada (min)</label>
             <input type="number" min="1" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
           <div>
@@ -529,20 +680,34 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById }) {
         {filtered.map((t) => {
           const cat = catById(t.type);
           const overdue = t.status === "pending" && t.date < todayISO();
+          const isActive = t.status === "in_progress";
+          const blockedStart = t.status === "pending" && !!activeTaskId;
           return (
-            <div className="task-row" key={t.id}>
+            <div className={`task-row ${isActive ? "task-row-active" : ""}`} key={t.id}>
               <div className="task-bar" style={{ background: cat ? cat.color : "#2A473C" }} />
               <div style={{ flex: 1 }}>
                 <div className="task-title">{t.title}</div>
                 <div className="task-meta">
-                  {t.date} · {t.duration} min
+                  {t.date} · {t.duration} min estimados
+                  {t.extensionsUsed > 0 && <span className="mono" style={{ marginLeft: 4 }}>(+{t.extensionsUsed}x{EXTENSION_MINUTES}min)</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
                   {overdue && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>vencida</span>}
+                  {isActive && <span className="status-tag" style={{ background: "#E7A33E22", color: "#E7A33E", marginLeft: 8 }}>en curso</span>}
                   {t.status === "completed" && <span className="status-tag" style={{ background: "#6FA96C22", color: "#6FA96C", marginLeft: 8 }}>completada</span>}
                   {t.status === "missed" && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>perdida</span>}
                 </div>
               </div>
               <div className="task-actions">
+                {t.status === "pending" && (
+                  <button className="icon-btn" title={blockedStart ? "Ya hay una tarea en curso" : "Iniciar (arranca su cronómetro)"} disabled={blockedStart} onClick={() => onStart(t.id)}>
+                    <Play size={14} />
+                  </button>
+                )}
+                {isActive && (
+                  <button className="icon-btn completed-active" title="Ver sesión en curso" onClick={onGoToSession}>
+                    <Timer size={14} />
+                  </button>
+                )}
                 <button className={`icon-btn ${t.status === "completed" ? "completed-active" : ""}`} title="Marcar completada" onClick={() => setStatus(t.id, "completed")}><Check size={15} /></button>
                 <button className={`icon-btn ${t.status === "missed" ? "missed-active" : ""}`} title="Marcar perdida" onClick={() => setStatus(t.id, "missed")}><X size={15} /></button>
                 <button className="icon-btn" title="Eliminar" onClick={() => removeTask(t.id)}><Trash2 size={14} /></button>
