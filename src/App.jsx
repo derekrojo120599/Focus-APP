@@ -53,12 +53,26 @@ function withinDays(dateStr, days) {
   const diff = (now - d) / (1000 * 60 * 60 * 24);
   return diff >= 0 && diff <= days;
 }
+const STAGE_NAMES = [
+  "Semilla", "Brote", "Retoño", "Arbusto", "Árbol joven",
+  "Árbol floreciente", "Árbol en flor", "Árbol frondoso", "Árbol con frutos", "Árbol dorado",
+  "Árbol luminoso", "Árbol resplandeciente", "Árbol ancestral", "Árbol sagrado", "Árbol celestial",
+  "Árbol mítico", "Árbol legendario", "Árbol eterno", "Árbol cósmico", "Árbol del infinito",
+  "Árbol de la eternidad",
+];
+const MAX_LEVEL = 20; // level 20 = 200 tareas completadas
+
 function getStage(completedCount) {
-  if (completedCount >= 50) return { name: "Árbol radiante", level: 5 };
-  if (completedCount >= 30) return { name: "Árbol", level: 4 };
-  if (completedCount >= 15) return { name: "Retoño", level: 3 };
-  if (completedCount >= 5) return { name: "Brote", level: 2 };
-  return { name: "Semilla", level: 1 };
+  const level = Math.min(Math.floor(completedCount / 10), MAX_LEVEL);
+  const intoLevel = completedCount - level * 10;
+  const toNext = level < MAX_LEVEL ? 10 - intoLevel : 0;
+  return {
+    level,
+    name: STAGE_NAMES[level],
+    next: level < MAX_LEVEL ? STAGE_NAMES[level + 1] : null,
+    progressPct: level < MAX_LEVEL ? (intoLevel / 10) * 100 : 100,
+    toNext,
+  };
 }
 function getMood(tasks) {
   const recent = tasks.filter(
@@ -75,20 +89,35 @@ const MOOD_COLOR = { happy: "#6FA96C", neutral: "#E7A33E", sad: "#C3572E" };
 const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 
 /* ---------------------------------------------------------
-   Companion creature — SVG, grows with completed tasks,
-   expression + posture follow recent success rate
+   Companion creature — SVG, evolves through 21 forms
+   (one every 10 completed tasks, up to level 20 / 200 tasks).
+   Growth is parametric: leaves → flowers → fruit → aura
+   rings → orbiting sparkles → crown, layered on top of the
+   mood-driven face/posture so habit progress and day-to-day
+   mood read as two separate signals.
 --------------------------------------------------------- */
+function polar(cx, cy, r, deg) {
+  const rad = (deg * Math.PI) / 180;
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+}
+
 function Companion({ level, mood, size = 176 }) {
   const bodyColor = MOOD_COLOR[mood];
-  const leafPairs = Math.min(level, 4);
-  const showFlower = level >= 5;
-  const bodyR = 30 + level * 3;
   const tilt = mood === "sad" ? -6 : mood === "happy" ? 2 : 0;
+
+  const leafPairs = Math.min(level, 6);
+  const bodyR = 26 + Math.min(level, 8) * 2;
+  const flowerCount = level >= 5 ? Math.min(level - 4, 8) : 0;
+  const fruitCount = level >= 10 ? Math.min(level - 9, 6) : 0;
+  const auraRings = level >= 12 ? Math.min(Math.floor((level - 11) / 2) + 1, 4) : 0;
+  const orbitCount = level >= 15 ? Math.min(level - 14, 6) : 0;
+  const hasCrown = level >= 18;
+  const auraPalette = ["#93A8D6", "#E7A33E", "#6FA96C", "#F4D58D"];
 
   return (
     <div className={`companion-stage mood-${mood}`}>
       <div className="companion-glow" style={{ background: `radial-gradient(circle, ${bodyColor}55 0%, transparent 70%)` }} />
-      {mood === "happy" && (
+      {mood === "happy" && level < 15 && (
         <div className="sparkles">
           <span className="spark s1" /><span className="spark s2" /><span className="spark s3" />
         </div>
@@ -98,6 +127,24 @@ function Companion({ level, mood, size = 176 }) {
         <path d="M 70 168 L 130 168 L 122 190 L 78 190 Z" fill="#8B5E3C" />
         <path d="M 70 168 L 130 168 L 127 176 L 73 176 Z" fill="#71492E" opacity="0.6" />
         <rect x="66" y="160" width="68" height="10" rx="3" fill="#6E4A2F" />
+
+        {/* aura rings — unlock at level 12+, one more every 2 levels */}
+        {Array.from({ length: auraRings }).map((_, i) => (
+          <circle
+            key={`ring-${i}`} cx="100" cy="90" r={bodyR + 26 + i * 13} fill="none"
+            stroke={auraPalette[i % auraPalette.length]} strokeWidth="2" opacity="0.35"
+            className="aura-ring" style={{ animationDelay: `${i * 0.4}s` }}
+          />
+        ))}
+
+        {/* orbiting sparkles — unlock at level 15+, count grows to 6 */}
+        {Array.from({ length: orbitCount }).map((_, i) => {
+          const [x, y] = polar(100, 88, bodyR + 42, (360 / orbitCount) * i - 90);
+          return (
+            <circle key={`orbit-${i}`} cx={x} cy={y} r="3.2" fill="#F4D58D" className="orbit-spark" style={{ animationDelay: `${i * 0.3}s` }} />
+          );
+        })}
+
         <g className="companion-plant">
           <line x1="100" y1="160" x2="100" y2="120" stroke="#4F7A4C" strokeWidth="5" strokeLinecap="round" />
           {Array.from({ length: leafPairs }).map((_, i) => {
@@ -109,13 +156,30 @@ function Companion({ level, mood, size = 176 }) {
               </g>
             );
           })}
-          {showFlower && (
-            <g>
-              <circle cx="82" cy="60" r="7" fill="#E7A33E" />
-              <circle cx="118" cy="58" r="7" fill="#E7A33E" />
-              <circle cx="100" cy="46" r="7" fill="#E7A33E" />
+
+          {/* flowers — unlock at level 5+, ring around the upper body */}
+          {Array.from({ length: flowerCount }).map((_, i) => {
+            const [x, y] = polar(100, 82, bodyR + 14, (360 / flowerCount) * i - 90);
+            return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#E7A33E" stroke="#0F211C" strokeWidth="0.5" />;
+          })}
+
+          {/* fruits — unlock at level 10+, lower arc around the body */}
+          {Array.from({ length: fruitCount }).map((_, i) => {
+            const angle = 60 + (60 / Math.max(fruitCount - 1, 1)) * i;
+            const [x, y] = polar(100, 92, bodyR + 6, angle);
+            return <circle key={`fruit-${i}`} cx={x} cy={y} r="4.5" fill="#D9857A" />;
+          })}
+
+          {/* crown — unlocks at level 18+ (near-max devotion) */}
+          {hasCrown && (
+            <g transform={`translate(100, ${64 - bodyR})`}>
+              <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="#F4D58D" stroke="#E7A33E" strokeWidth="1" />
+              <circle cx="0" cy="-9" r="2.4" fill="#E7A33E" />
+              <circle cx="-9" cy="-6" r="2" fill="#E7A33E" />
+              <circle cx="9" cy="-6" r="2" fill="#E7A33E" />
             </g>
           )}
+
           <circle cx="100" cy="90" r={bodyR} fill={bodyColor} className="companion-body" />
           <circle cx="100" cy="90" r={bodyR} fill="url(#sheen)" opacity="0.25" />
           <defs>
@@ -208,12 +272,22 @@ export default function App() {
           </nav>
 
           <div className="companion-card">
-            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero</span>
+            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero · nivel {stage.level}</span>
             <Companion level={stage.level} mood={mood} />
             <div className="stage-name">{stage.name}</div>
             <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
               <Sparkles size={12} /> Ánimo {MOOD_LABEL[mood]}
             </span>
+            <div className="evolve-track-wrap">
+              <div className="progress-track evolve-track">
+                <div className="progress-fill" style={{ width: `${stage.progressPct}%`, background: "#E7A33E" }} />
+              </div>
+              <div className="evolve-label">
+                {stage.next
+                  ? <>faltan <strong>{stage.toNext}</strong> tareas para {stage.next}</>
+                  : <>nivel máximo alcanzado 🎉</>}
+              </div>
+            </div>
           </div>
 
           <div className="quick-stats">

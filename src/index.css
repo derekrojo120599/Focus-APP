@@ -88,6 +88,16 @@ html, body, #root { margin: 0; padding: 0; min-height: 100%; }
 .stage-name { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin-top: 6px; }
 .mood-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
 
+.aura-ring { animation: aura-pulse 3s ease-in-out infinite; transform-origin: 100px 90px; }
+@keyframes aura-pulse { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.05); } }
+.orbit-spark { animation: orbit-blink 1.8s ease-in-out infinite; filter: drop-shadow(0 0 3px #F4D58D); }
+@keyframes orbit-blink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+.evolve-track-wrap { width: 100%; margin-top: 14px; }
+.evolve-track { height: 6px; }
+.evolve-label { font-size: 10.5px; color: #7FA396; margin-top: 6px; text-align: center; }
+.evolve-label strong { color: #F4EEDF; }
+
 .quick-stats { display: flex; justify-content: space-between; background: #16281F; border: 1px solid #26402F; border-radius: 14px; padding: 14px 10px; }
 .qstat { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
 .qnum { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px; }
