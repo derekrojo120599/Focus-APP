@@ -1,15 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { margin: 0; padding: 0; min-height: 100%; }
+html { overscroll-behavior: none; }
+body { overscroll-behavior: none; -webkit-touch-callout: none; }
 
 .app-root {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   background: radial-gradient(circle at 12% -10%, #1a2f27 0%, #0F211C 55%), #0F211C;
   color: #F4EEDF;
   font-family: 'Inter', sans-serif;
-  padding: 28px 20px 60px;
+  padding: max(28px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(60px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   overflow-x: hidden;
 }
 .mono { font-family: 'JetBrains Mono', monospace; }
