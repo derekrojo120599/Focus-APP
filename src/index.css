@@ -115,7 +115,10 @@ html, body, #root { margin: 0; padding: 0; min-height: 100%; }
 /* ---------------- Pomodoro ---------------- */
 .timer-wrap { display: flex; flex-direction: column; align-items: center; padding: 6px 10px 4px; }
 .hint-note { font-size: 12px; color: #7FA396; text-align: center; max-width: 420px; margin-bottom: 18px; line-height: 1.5; }
-.task-session-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 18px; text-align: center; }
+.task-session-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; text-align: center; }
+.phase-pill { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; margin-bottom: 18px; }
+.task-overall { width: 100%; max-width: 340px; margin-top: 18px; }
+.task-overall-label { font-size: 11px; color: #7FA396; text-align: center; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
 .session-alert { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #E7A33E; background: #E7A33E1a; padding: 8px 14px; border-radius: 10px; margin-top: 16px; }
 .session-alert.danger { color: #C3572E; background: #C3572E1a; }
 .mode-pills { display: flex; gap: 8px; margin-bottom: 22px; }
@@ -148,7 +151,7 @@ select, input[type=text], input[type=date], input[type=number] {
 select:focus, input:focus { outline: none; border-color: #E7A33E; }
 label.field-label { font-size: 11px; color: #7FA396; margin-bottom: 4px; display: block; }
 
-.settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; max-width: 420px; }
+.settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; max-width: 520px; }
 
 /* ---------------- Tasks ---------------- */
 .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }

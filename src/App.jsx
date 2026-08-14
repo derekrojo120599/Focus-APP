@@ -13,10 +13,10 @@ import {
    card:       #16281F  panel surface
    card-line:  #26402F  hairline border
    parchment:  #F4EEDF  primary text on dark
-   amber:      #E7A33E  pomodoro / neutral mood
-   moss:       #6FA96C  stats / success / happy mood
-   clay:       #C3572E  danger / sad mood
-   periwinkle: #93A8D6  tasks / secondary accent
+   amber:      #E7A33E  pomodoro / enfoque
+   periwinkle: #93A8D6  tareas / descanso corto
+   moss:       #6FA96C  estadísticas / descanso largo / happy mood
+   clay:       #C3572E  danger / sad mood / tiempo cumplido
 --------------------------------------------------------- */
 
 const DEFAULT_CATEGORIES = [
@@ -58,7 +58,7 @@ function withinDays(dateStr, days) {
   return diff >= 0 && diff <= days;
 }
 function fmtClock(totalSeconds) {
-  const s = Math.max(0, totalSeconds);
+  const s = Math.max(0, Math.round(totalSeconds));
   const mm = String(Math.floor(s / 60)).padStart(2, "0");
   const ss = String(Math.floor(s % 60)).padStart(2, "0");
   return `${mm}:${ss}`;
@@ -71,7 +71,7 @@ const STAGE_NAMES = [
   "Árbol mítico", "Árbol legendario", "Árbol eterno", "Árbol cósmico", "Árbol del infinito",
   "Árbol de la eternidad",
 ];
-const MAX_LEVEL = 20; // level 20 = 200 tareas completadas
+const MAX_LEVEL = 20;
 
 function getStage(completedCount) {
   const level = Math.min(Math.floor(completedCount / 10), MAX_LEVEL);
@@ -101,7 +101,6 @@ const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 
 /* ---------------------------------------------------------
    Companion creature — SVG, evolves through 21 forms
-   (one every 10 completed tasks, up to level 20 / 200 tasks).
 --------------------------------------------------------- */
 function polar(cx, cy, r, deg) {
   const rad = (deg * Math.PI) / 180;
@@ -223,7 +222,6 @@ function saveData(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {}
 }
-
 function requestNotifyPermission() {
   try {
     if ("Notification" in window && Notification.permission === "default") {
@@ -240,6 +238,65 @@ function fireBrowserNotification(title, body) {
 }
 
 /* ---------------------------------------------------------
+   Task pomodoro state machine
+   A task's estimated duration is spent only during "work"
+   phases; breaks are scheduled automatically between work
+   chunks following the normal pomodoro rule (short break
+   after each cycle, long break every `longEvery` cycles).
+   The final work chunk is capped to whatever time remains
+   so the total always adds up to the estimate (+ extensions).
+--------------------------------------------------------- */
+function startSessionFields(task, settings) {
+  const totalSeconds = task.duration * 60;
+  const workChunk = Math.min(settings.work * 60, totalSeconds);
+  return {
+    status: "in_progress",
+    startedAt: Date.now(),
+    extensionsUsed: 0,
+    notified30: false,
+    workedSeconds: 0,
+    cyclesCompleted: 0,
+    overtimeSeconds: 0,
+    running: true,
+    phase: "work",
+    phaseSecondsLeft: workChunk,
+    phaseTotalSeconds: workChunk,
+  };
+}
+
+function advanceTaskTick(t, settings) {
+  if (t.phase === "done") {
+    return { ...t, overtimeSeconds: (t.overtimeSeconds || 0) + 1 };
+  }
+  const phaseSecondsLeft = t.phaseSecondsLeft - 1;
+  const workedSeconds = t.workedSeconds + (t.phase === "work" ? 1 : 0);
+
+  if (phaseSecondsLeft > 0) {
+    return { ...t, phaseSecondsLeft, workedSeconds };
+  }
+
+  const totalSeconds = t.duration * 60;
+  const remaining = totalSeconds - workedSeconds;
+
+  if (t.phase === "work") {
+    const cyclesCompleted = t.cyclesCompleted + 1;
+    if (remaining <= 0) {
+      return { ...t, workedSeconds, cyclesCompleted, phase: "done", phaseSecondsLeft: 0, phaseTotalSeconds: 0, overtimeSeconds: 0 };
+    }
+    const isLong = cyclesCompleted % (settings.longEvery || 4) === 0;
+    const breakSeconds = (isLong ? settings.long : settings.short) * 60;
+    return { ...t, workedSeconds, cyclesCompleted, phase: isLong ? "long" : "short", phaseSecondsLeft: breakSeconds, phaseTotalSeconds: breakSeconds };
+  }
+
+  // a break just ended — resume work (or finish if the estimate is already spent)
+  if (remaining <= 0) {
+    return { ...t, workedSeconds, phase: "done", phaseSecondsLeft: 0, phaseTotalSeconds: 0, overtimeSeconds: 0 };
+  }
+  const workChunk = Math.min(settings.work * 60, remaining);
+  return { ...t, workedSeconds, phase: "work", phaseSecondsLeft: workChunk, phaseTotalSeconds: workChunk };
+}
+
+/* ---------------------------------------------------------
    Main App
 --------------------------------------------------------- */
 export default function App() {
@@ -251,7 +308,6 @@ export default function App() {
   );
   const [settings, setSettings] = useState(initial.current?.settings || DEFAULT_SETTINGS);
   const [sessionsCompleted, setSessionsCompleted] = useState(initial.current?.sessionsCompleted || 0);
-  const [tick, setTick] = useState(0);
   const [banner, setBanner] = useState(null);
 
   useEffect(() => {
@@ -266,55 +322,60 @@ export default function App() {
   const mood = getMood(tasks);
   const catById = useCallback((id) => categories.find((c) => c.id === id), [categories]);
 
-  // live tick while a task session is running, so the countdown updates every second
+  // pomodoro engine tick — advances the active task's phase every second while running
   useEffect(() => {
-    if (!activeTask) return;
-    const id = setInterval(() => setTick((n) => n + 1), 1000);
+    if (!activeTask || !activeTask.running) return;
+    const id = setInterval(() => {
+      setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? advanceTaskTick(t, settings) : t)));
+    }, 1000);
     return () => clearInterval(id);
-  }, [activeTask?.id, activeTask?.startedAt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTask?.id, activeTask?.running, settings.work, settings.short, settings.long, settings.longEvery]);
 
-  // 30-minute-remaining warning — fires once per session (resets on extension)
+  // 30-minute-of-work-remaining warning — fires once per session (resets on extension)
   useEffect(() => {
     if (!activeTask) return;
-    const totalSeconds = activeTask.duration * 60;
-    const elapsed = Math.floor((Date.now() - activeTask.startedAt) / 1000);
-    const remaining = totalSeconds - elapsed;
+    const remaining = activeTask.duration * 60 - activeTask.workedSeconds;
     if (remaining <= WARNING_SECONDS && remaining > 0 && !activeTask.notified30) {
-      const msg = `Quedan ${Math.ceil(remaining / 60)} min para el tiempo estimado de "${activeTask.title}".`;
+      const msg = `Quedan ${Math.ceil(remaining / 60)} min de trabajo estimado para "${activeTask.title}".`;
       fireBrowserNotification("⏰ Refugio de Enfoque", msg);
       setBanner(msg);
       setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, notified30: true } : t)));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, activeTask?.id]);
+  }, [activeTask?.workedSeconds, activeTask?.id]);
 
   function startTask(id) {
-    if (activeTask) return; // only one active session at a time
+    if (activeTask) return;
     requestNotifyPermission();
     setBanner(null);
-    setTasks((ts) =>
-      ts.map((t) =>
-        t.id === id
-          ? { ...t, status: "in_progress", startedAt: Date.now(), extensionsUsed: 0, notified30: false }
-          : t
-      )
-    );
+    setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...startSessionFields(t, settings) } : t)));
     setTab("pomodoro");
+  }
+  function toggleActiveRunning() {
+    if (!activeTask) return;
+    setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, running: !t.running } : t)));
   }
   function extendActiveTask() {
     if (!activeTask || activeTask.extensionsUsed >= MAX_EXTENSIONS) return;
     setTasks((ts) =>
-      ts.map((t) =>
-        t.id === activeTask.id
-          ? { ...t, duration: t.duration + EXTENSION_MINUTES, extensionsUsed: t.extensionsUsed + 1, notified30: false }
-          : t
-      )
+      ts.map((t) => {
+        if (t.id !== activeTask.id) return t;
+        const newDuration = t.duration + EXTENSION_MINUTES;
+        const patch = { duration: newDuration, extensionsUsed: t.extensionsUsed + 1, notified30: false };
+        if (t.phase === "done") {
+          const remaining = newDuration * 60 - t.workedSeconds;
+          const workChunk = Math.min(settings.work * 60, remaining);
+          Object.assign(patch, { phase: "work", phaseSecondsLeft: workChunk, phaseTotalSeconds: workChunk, overtimeSeconds: 0, running: true });
+        }
+        return { ...t, ...patch };
+      })
     );
     setBanner(null);
   }
   function finishActiveTask(status) {
     if (!activeTask) return;
-    setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, status } : t)));
+    setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, status, running: false } : t)));
     setBanner(null);
   }
   function cancelActiveTask() {
@@ -322,7 +383,7 @@ export default function App() {
     setTasks((ts) =>
       ts.map((t) =>
         t.id === activeTask.id
-          ? { ...t, status: "pending", startedAt: null, extensionsUsed: 0, notified30: false }
+          ? { ...t, status: "pending", startedAt: null, extensionsUsed: 0, notified30: false, running: false, phase: null }
           : t
       )
     );
@@ -396,6 +457,7 @@ export default function App() {
               sessionsCompleted={sessionsCompleted}
               setSessionsCompleted={setSessionsCompleted}
               activeTask={activeTask}
+              onToggleRunning={toggleActiveRunning}
               onExtend={extendActiveTask}
               onComplete={() => finishActiveTask("completed")}
               onMiss={() => finishActiveTask("missed")}
@@ -415,49 +477,73 @@ export default function App() {
   );
 }
 
-/* ---------------- Task session (tied to a started task's estimated duration) ---------------- */
-function TaskSessionCard({ task, onExtend, onComplete, onMiss, onCancel }) {
+/* ---------------- Task session — real pomodoro cycles against the estimate ---------------- */
+const PHASE_META = {
+  work: { label: "Enfoque", color: "#E7A33E" },
+  short: { label: "Descanso corto", color: "#93A8D6" },
+  long: { label: "Descanso largo", color: "#6FA96C" },
+  done: { label: "Tiempo estimado cumplido", color: "#C3572E" },
+};
+
+function TaskSessionCard({ task, onToggleRunning, onExtend, onComplete, onMiss, onCancel }) {
   const totalSeconds = task.duration * 60;
-  const elapsed = Math.floor((Date.now() - task.startedAt) / 1000);
-  const remaining = totalSeconds - elapsed;
-  const overtime = remaining < 0;
-  const nearEnd = !overtime && remaining <= WARNING_SECONDS;
-  const pct = Math.min(100, (elapsed / totalSeconds) * 100);
-  const ringColor = overtime || nearEnd ? "#C3572E" : "#E7A33E";
+  const remainingTotal = Math.max(0, totalSeconds - task.workedSeconds);
+  const overallPct = totalSeconds ? Math.min(100, (task.workedSeconds / totalSeconds) * 100) : 0;
+  const nearEnd = remainingTotal <= WARNING_SECONDS && remainingTotal > 0;
+  const meta = PHASE_META[task.phase] || PHASE_META.done;
+  const phasePct = task.phaseTotalSeconds ? ((task.phaseTotalSeconds - task.phaseSecondsLeft) / task.phaseTotalSeconds) * 100 : 100;
   const extensionsLeft = MAX_EXTENSIONS - task.extensionsUsed;
 
   return (
     <div className="card accent-amber">
-      <span className="eyebrow">tarea en curso</span>
+      <span className="eyebrow">tarea en curso · ciclo {task.cyclesCompleted + 1}</span>
       <div className="timer-wrap">
         <div className="task-session-title">{task.title}</div>
+        <div className="phase-pill" style={{ background: meta.color + "22", color: meta.color }}>{meta.label}</div>
 
         <div className="ring-wrap">
           <svg className="ring" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="88" fill="none" stroke="#20362B" strokeWidth="10" />
             <circle
-              cx="100" cy="100" r="88" fill="none" stroke={ringColor} strokeWidth="10" strokeLinecap="round"
+              cx="100" cy="100" r="88" fill="none" stroke={meta.color} strokeWidth="10" strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 88}
-              strokeDashoffset={2 * Math.PI * 88 * (1 - pct / 100)}
+              strokeDashoffset={2 * Math.PI * 88 * (1 - phasePct / 100)}
               transform="rotate(-90 100 100)"
               className="ring-progress"
             />
           </svg>
-          <div className="time-display">{overtime ? "+" : ""}{fmtClock(Math.abs(remaining))}</div>
+          <div className="time-display">
+            {task.phase === "done" ? `+${fmtClock(task.overtimeSeconds)}` : fmtClock(task.phaseSecondsLeft)}
+          </div>
+        </div>
+
+        {task.phase !== "done" && (
+          <button className="btn btn-ghost" style={{ marginTop: 18 }} onClick={onToggleRunning}>
+            {task.running ? <Pause size={15} /> : <Play size={15} />} {task.running ? "Pausar" : "Reanudar"}
+          </button>
+        )}
+
+        <div className="task-overall">
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${overallPct}%`, background: "#E7A33E" }} />
+          </div>
+          <div className="task-overall-label">
+            {Math.round(task.workedSeconds / 60)} / {task.duration} min trabajados en esta tarea
+          </div>
         </div>
 
         {nearEnd && (
           <div className="session-alert">
-            <AlarmClock size={14} /> Menos de 30 min para el tiempo estimado
+            <AlarmClock size={14} /> Menos de 30 min de trabajo estimado restantes
           </div>
         )}
-        {overtime && (
+        {task.phase === "done" && (
           <div className="session-alert danger">
-            <AlarmClock size={14} /> Tiempo estimado superado — agrega tiempo o cierra la tarea
+            <AlarmClock size={14} /> Tiempo estimado cumplido — agrega tiempo o cierra la tarea
           </div>
         )}
 
-        <div className="timer-controls" style={{ marginTop: 20 }}>
+        <div className="timer-controls" style={{ marginTop: 18 }}>
           <button className="btn btn-ghost" onClick={onExtend} disabled={extensionsLeft <= 0}>
             <Plus size={14} /> +{EXTENSION_MINUTES} min {extensionsLeft > 0 ? `(${extensionsLeft} disp.)` : "(sin extensiones)"}
           </button>
@@ -474,7 +560,7 @@ function TaskSessionCard({ task, onExtend, onComplete, onMiss, onCancel }) {
 }
 
 /* ---------------- Free-form Pomodoro (no task attached) ---------------- */
-function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCompleted, activeTask, onExtend, onComplete, onMiss, onCancel }) {
+function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCompleted, activeTask, onToggleRunning, onExtend, onComplete, onMiss, onCancel }) {
   const [mode, setMode] = useState("work");
   const [secondsLeft, setSecondsLeft] = useState(settings.work * 60);
   const [running, setRunning] = useState(false);
@@ -508,7 +594,7 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
   }, [running, mode, setSessionsCompleted]);
 
   if (activeTask) {
-    return <TaskSessionCard task={activeTask} onExtend={onExtend} onComplete={onComplete} onMiss={onMiss} onCancel={onCancel} />;
+    return <TaskSessionCard task={activeTask} onToggleRunning={onToggleRunning} onExtend={onExtend} onComplete={onComplete} onMiss={onMiss} onCancel={onCancel} />;
   }
 
   const total = durationsMin[mode] * 60;
@@ -519,7 +605,7 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
     <div className="card accent-amber">
       <span className="eyebrow">pomodoro libre</span>
       <div className="timer-wrap">
-        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para arrancar su propio cronómetro con tiempo estimado.</div>
+        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automáticos.</div>
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
           <button className={`mode-pill ${mode === "short" ? "active" : ""}`} onClick={() => setMode("short")}>Descanso corto</button>
@@ -558,7 +644,7 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
 
         {showSettings && (
           <div style={{ width: "100%", marginTop: 18 }}>
-            <label className="field-label">Duraciones (minutos)</label>
+            <label className="field-label">Duraciones (minutos) — también rigen los ciclos automáticos de las tareas</label>
             <div className="settings-grid">
               <div>
                 <label className="field-label">Enfoque</label>
@@ -571,6 +657,10 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
               <div>
                 <label className="field-label">Descanso largo</label>
                 <input type="number" min="1" value={settings.long} onChange={(e) => setSettings({ ...settings, long: Number(e.target.value) || 1 })} />
+              </div>
+              <div>
+                <label className="field-label">Ciclos hasta descanso largo</label>
+                <input type="number" min="1" value={settings.longEvery} onChange={(e) => setSettings({ ...settings, longEvery: Number(e.target.value) || 1 })} />
               </div>
             </div>
           </div>
@@ -602,6 +692,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activ
       {
         id: uid(), title: title.trim(), date, duration: Number(duration) || 0, type: catId, status: "pending",
         createdAt: Date.now(), startedAt: null, extensionsUsed: 0, notified30: false,
+        phase: null, phaseSecondsLeft: 0, phaseTotalSeconds: 0, workedSeconds: 0, cyclesCompleted: 0, overtimeSeconds: 0, running: false,
       },
     ]);
     setTitle("");
@@ -692,14 +783,14 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activ
                   {t.extensionsUsed > 0 && <span className="mono" style={{ marginLeft: 4 }}>(+{t.extensionsUsed}x{EXTENSION_MINUTES}min)</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
                   {overdue && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>vencida</span>}
-                  {isActive && <span className="status-tag" style={{ background: "#E7A33E22", color: "#E7A33E", marginLeft: 8 }}>en curso</span>}
+                  {isActive && <span className="status-tag" style={{ background: "#E7A33E22", color: "#E7A33E", marginLeft: 8 }}>en curso · {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
                   {t.status === "completed" && <span className="status-tag" style={{ background: "#6FA96C22", color: "#6FA96C", marginLeft: 8 }}>completada</span>}
                   {t.status === "missed" && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>perdida</span>}
                 </div>
               </div>
               <div className="task-actions">
                 {t.status === "pending" && (
-                  <button className="icon-btn" title={blockedStart ? "Ya hay una tarea en curso" : "Iniciar (arranca su cronómetro)"} disabled={blockedStart} onClick={() => onStart(t.id)}>
+                  <button className="icon-btn" title={blockedStart ? "Ya hay una tarea en curso" : "Iniciar (reparte el tiempo en ciclos de pomodoro)"} disabled={blockedStart} onClick={() => onStart(t.id)}>
                     <Play size={14} />
                   </button>
                 )}
