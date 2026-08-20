@@ -9,24 +9,25 @@ import {
 
 /* ---------------------------------------------------------
    Tokens
-   ink:        #0F211C  deep pine background
-   card:       #16281F  panel surface
-   card-line:  #26402F  hairline border
-   parchment:  #F4EEDF  primary text on dark
-   amber:      #E7A33E  pomodoro / enfoque
-   periwinkle: #93A8D6  tareas / descanso corto
-   moss:       #6FA96C  estadísticas / descanso largo / happy mood
-   clay:       #C3572E  danger / sad mood / tiempo cumplido
+   pine:      #324D34  main background / sidebar
+   card:      #3A5A3C  panel surface
+   raised:    #456642  inputs / rows / raised surfaces
+   sage:      #729979  borders / secondary cards / inactive state
+   olive:     #719442  main accent / primary CTA / progress / active tab
+   highlight: #D3D464  secondary accent / hover / timer / badges
+   cream:     #EBE4C2  primary text on dark
+   beige:     #CECDA9  secondary / muted text
+   clay:      #C3572E  danger / sad mood / tiempo cumplido
 --------------------------------------------------------- */
 
 const DEFAULT_CATEGORIES = [
-  { id: "trabajo", name: "Trabajo", color: "#E7A33E" },
-  { id: "estudio", name: "Estudio", color: "#93A8D6" },
-  { id: "personal", name: "Personal", color: "#6FA96C" },
+  { id: "trabajo", name: "Trabajo", color: "#719442" },
+  { id: "estudio", name: "Estudio", color: "#729979" },
+  { id: "personal", name: "Personal", color: "#D3D464" },
   { id: "salud", name: "Salud", color: "#C3572E" },
 ];
 
-const COLOR_PRESETS = ["#E7A33E", "#93A8D6", "#6FA96C", "#C3572E", "#B98BD1", "#4FB3A9", "#D9857A", "#8FA0AD"];
+const COLOR_PRESETS = ["#719442", "#729979", "#D3D464", "#C3572E", "#B98BD1", "#8FA0AD", "#D9857A", "#5BBDE8"];
 
 const DEFAULT_SETTINGS = { work: 25, short: 5, long: 15, longEvery: 4 };
 
@@ -96,7 +97,7 @@ function getMood(tasks) {
   return "sad";
 }
 
-const MOOD_COLOR = { happy: "#6FA96C", neutral: "#E7A33E", sad: "#C3572E" };
+const MOOD_COLOR = { happy: "#719442", neutral: "#729979", sad: "#C3572E" };
 const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 
 /* ---------------------------------------------------------
@@ -118,7 +119,7 @@ function Companion({ level, mood, size = 176 }) {
   const auraRings = level >= 12 ? Math.min(Math.floor((level - 11) / 2) + 1, 4) : 0;
   const orbitCount = level >= 15 ? Math.min(level - 14, 6) : 0;
   const hasCrown = level >= 18;
-  const auraPalette = ["#93A8D6", "#E7A33E", "#6FA96C", "#F4D58D"];
+  const auraPalette = ["#719442", "#D3D464", "#729979", "#CECDA9"];
 
   return (
     <div className={`companion-stage mood-${mood}`}>
@@ -163,7 +164,7 @@ function Companion({ level, mood, size = 176 }) {
 
           {Array.from({ length: flowerCount }).map((_, i) => {
             const [x, y] = polar(100, 82, bodyR + 14, (360 / flowerCount) * i - 90);
-            return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#E7A33E" stroke="#0F211C" strokeWidth="0.5" />;
+            return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#D3D464" stroke="#324D34" strokeWidth="0.5" />;
           })}
 
           {Array.from({ length: fruitCount }).map((_, i) => {
@@ -189,16 +190,16 @@ function Companion({ level, mood, size = 176 }) {
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </radialGradient>
           </defs>
-          <circle cx={100 - bodyR * 0.4} cy="86" r="5" fill="#0F211C" />
-          <circle cx={100 + bodyR * 0.4} cy="86" r="5" fill="#0F211C" />
+          <circle cx={100 - bodyR * 0.4} cy="86" r="5" fill="#324D34" />
+          <circle cx={100 + bodyR * 0.4} cy="86" r="5" fill="#324D34" />
           {mood === "happy" && (
-            <path d={`M ${100 - bodyR * 0.35} ${98} Q 100 ${112} ${100 + bodyR * 0.35} ${98}`} stroke="#0F211C" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d={`M ${100 - bodyR * 0.35} ${98} Q 100 ${112} ${100 + bodyR * 0.35} ${98}`} stroke="#324D34" strokeWidth="4" fill="none" strokeLinecap="round" />
           )}
           {mood === "neutral" && (
-            <line x1={100 - bodyR * 0.3} y1="102" x2={100 + bodyR * 0.3} y2="102" stroke="#0F211C" strokeWidth="4" strokeLinecap="round" />
+            <line x1={100 - bodyR * 0.3} y1="102" x2={100 + bodyR * 0.3} y2="102" stroke="#324D34" strokeWidth="4" strokeLinecap="round" />
           )}
           {mood === "sad" && (
-            <path d={`M ${100 - bodyR * 0.35} ${106} Q 100 ${94} ${100 + bodyR * 0.35} ${106}`} stroke="#0F211C" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d={`M ${100 - bodyR * 0.35} ${106} Q 100 ${94} ${100 + bodyR * 0.35} ${106}`} stroke="#324D34" strokeWidth="4" fill="none" strokeLinecap="round" />
           )}
         </g>
       </svg>
@@ -424,7 +425,7 @@ export default function App() {
             </span>
             <div className="evolve-track-wrap">
               <div className="progress-track evolve-track">
-                <div className="progress-fill" style={{ width: `${stage.progressPct}%`, background: "#E7A33E" }} />
+                <div className="progress-fill" style={{ width: `${stage.progressPct}%`, background: "#719442" }} />
               </div>
               <div className="evolve-label">
                 {stage.next
@@ -435,7 +436,7 @@ export default function App() {
           </div>
 
           <div className="quick-stats">
-            <div className="qstat"><span className="qnum" style={{ color: "#6FA96C" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
+            <div className="qstat"><span className="qnum" style={{ color: "#719442" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
             <div className="qstat"><span className="qnum" style={{ color: "#C3572E" }}>{missedCount}</span><span className="qlabel">perdidas</span></div>
             <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">éxito</span></div>
           </div>
@@ -479,9 +480,9 @@ export default function App() {
 
 /* ---------------- Task session — real pomodoro cycles against the estimate ---------------- */
 const PHASE_META = {
-  work: { label: "Enfoque", color: "#E7A33E" },
-  short: { label: "Descanso corto", color: "#93A8D6" },
-  long: { label: "Descanso largo", color: "#6FA96C" },
+  work: { label: "Enfoque", color: "#719442" },
+  short: { label: "Descanso corto", color: "#729979" },
+  long: { label: "Descanso largo", color: "#D3D464" },
   done: { label: "Tiempo estimado cumplido", color: "#C3572E" },
 };
 
@@ -503,7 +504,7 @@ function TaskSessionCard({ task, onToggleRunning, onExtend, onComplete, onMiss, 
 
         <div className="ring-wrap">
           <svg className="ring" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="88" fill="none" stroke="#20362B" strokeWidth="10" />
+            <circle cx="100" cy="100" r="88" fill="none" stroke="#456642" strokeWidth="10" />
             <circle
               cx="100" cy="100" r="88" fill="none" stroke={meta.color} strokeWidth="10" strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 88}
@@ -525,7 +526,7 @@ function TaskSessionCard({ task, onToggleRunning, onExtend, onComplete, onMiss, 
 
         <div className="task-overall">
           <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${overallPct}%`, background: "#E7A33E" }} />
+            <div className="progress-fill" style={{ width: `${overallPct}%`, background: "#719442" }} />
           </div>
           <div className="task-overall-label">
             {Math.round(task.workedSeconds / 60)} / {task.duration} min trabajados en esta tarea
@@ -599,7 +600,7 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
 
   const total = durationsMin[mode] * 60;
   const pct = total ? ((total - secondsLeft) / total) * 100 : 0;
-  const modeColor = mode === "work" ? "#E7A33E" : mode === "short" ? "#93A8D6" : "#6FA96C";
+  const modeColor = mode === "work" ? "#719442" : mode === "short" ? "#729979" : "#D3D464";
 
   return (
     <div className="card accent-amber">
@@ -614,7 +615,7 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
 
         <div className="ring-wrap">
           <svg className="ring" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="88" fill="none" stroke="#20362B" strokeWidth="10" />
+            <circle cx="100" cy="100" r="88" fill="none" stroke="#456642" strokeWidth="10" />
             <circle
               cx="100" cy="100" r="88" fill="none" stroke={modeColor} strokeWidth="10" strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 88}
@@ -719,7 +720,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activ
   return (
     <>
       <div className="card accent-peri">
-        <span className="eyebrow" style={{ color: "#93A8D6" }}>nueva tarea</span>
+        <span className="eyebrow" style={{ color: "#729979" }}>nueva tarea</span>
         <div className="form-grid">
           <div>
             <label className="field-label">Título</label>
@@ -775,7 +776,7 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activ
           const blockedStart = t.status === "pending" && !!activeTaskId;
           return (
             <div className={`task-row ${isActive ? "task-row-active" : ""}`} key={t.id}>
-              <div className="task-bar" style={{ background: cat ? cat.color : "#2A473C" }} />
+              <div className="task-bar" style={{ background: cat ? cat.color : "#729979" }} />
               <div style={{ flex: 1 }}>
                 <div className="task-title">{t.title}</div>
                 <div className="task-meta">
@@ -783,8 +784,8 @@ function TasksPanel({ tasks, setTasks, categories, setCategories, catById, activ
                   {t.extensionsUsed > 0 && <span className="mono" style={{ marginLeft: 4 }}>(+{t.extensionsUsed}x{EXTENSION_MINUTES}min)</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
                   {overdue && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>vencida</span>}
-                  {isActive && <span className="status-tag" style={{ background: "#E7A33E22", color: "#E7A33E", marginLeft: 8 }}>en curso · {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
-                  {t.status === "completed" && <span className="status-tag" style={{ background: "#6FA96C22", color: "#6FA96C", marginLeft: 8 }}>completada</span>}
+                  {isActive && <span className="status-tag" style={{ background: "#D3D46422", color: "#D3D464", marginLeft: 8 }}>en curso · {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
+                  {t.status === "completed" && <span className="status-tag" style={{ background: "#71944222", color: "#719442", marginLeft: 8 }}>completada</span>}
                   {t.status === "missed" && <span className="status-tag" style={{ background: "#C3572E22", color: "#C3572E", marginLeft: 8 }}>perdida</span>}
                 </div>
               </div>
@@ -843,19 +844,19 @@ function StatsPanel({ tasks, categories }) {
   return (
     <>
       <div className="card accent-moss chart-card">
-        <span className="eyebrow" style={{ color: "#6FA96C" }}>progreso mensual</span>
+        <span className="eyebrow" style={{ color: "#D3D464" }}>progreso mensual</span>
         {monthly.length === 0 ? (
           <div className="empty">Aún no hay tareas completadas o perdidas para graficar.</div>
         ) : (
           <div style={{ width: "100%", height: 300, marginTop: 12 }}>
             <ResponsiveContainer>
               <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#26402F" vertical={false} />
-                <XAxis dataKey="mes" stroke="#9DB6AA" fontSize={12} axisLine={false} tickLine={false} />
-                <YAxis stroke="#9DB6AA" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: "#16281F", border: "1px solid #26402F", borderRadius: 10, fontSize: 12 }} cursor={{ fill: "#20362B" }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#729979" vertical={false} />
+                <XAxis dataKey="mes" stroke="#CECDA9" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="#CECDA9" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "#3A5A3C", border: "1px solid #729979", borderRadius: 10, fontSize: 12 }} cursor={{ fill: "#456642" }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="completadas" fill="#6FA96C" radius={[6, 6, 0, 0]} name="Completadas" maxBarSize={40} />
+                <Bar dataKey="completadas" fill="#719442" radius={[6, 6, 0, 0]} name="Completadas" maxBarSize={40} />
                 <Bar dataKey="perdidas" fill="#C3572E" radius={[6, 6, 0, 0]} name="Perdidas" maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
@@ -864,7 +865,7 @@ function StatsPanel({ tasks, categories }) {
       </div>
 
       <div className="card accent-moss">
-        <span className="eyebrow" style={{ color: "#6FA96C" }}>por categoría</span>
+        <span className="eyebrow" style={{ color: "#D3D464" }}>por categoría</span>
         {byCategory.length === 0 && <div className="empty">Sin datos todavía.</div>}
         {byCategory.map((c) => {
           const total = c.completadas + c.perdidas;
