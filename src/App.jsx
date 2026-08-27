@@ -500,6 +500,64 @@ export default function App() {
   );
 }
 
+/* ---------------- Motivational Quote ---------------- */
+const FOCUS_PHRASES = [
+  "Mantén el enfoque, fluye con la tarea.",
+  "Respira profundo y continúa.",
+  "Un paso a la vez, sin prisa.",
+  "Tu atención es tu superpoder.",
+  "El progreso se construye ahora mismo.",
+  "Concéntrate en lo esencial.",
+  "Estás exactamente donde necesitas estar."
+];
+
+const BREAK_PHRASES = [
+  "Toma un vaso de agua, hidrátate.",
+  "Estira tus músculos y relaja los hombros.",
+  "Descansa la vista, mira a lo lejos.",
+  "Respira, te lo has ganado.",
+  "Descansa, tu mente también necesita recargar.",
+  "Desconecta unos minutos y disfruta la pausa.",
+  "Un breve respiro antes de volver con energía."
+];
+
+function MotivationalQuote({ mode, running }) {
+  const [quote, setQuote] = useState("");
+  const [fade, setFade] = useState(true);
+
+  const pickQuote = useCallback(() => {
+    if (mode === "done") return "¡Tiempo cumplido! Gran esfuerzo.";
+    const list = mode === "work" ? FOCUS_PHRASES : BREAK_PHRASES;
+    return list[Math.floor(Math.random() * list.length)];
+  }, [mode]);
+
+  const updateQuote = useCallback(() => {
+    setFade(false);
+    setTimeout(() => {
+      setQuote(pickQuote());
+      setFade(true);
+    }, 400);
+  }, [pickQuote]);
+
+  useEffect(() => {
+    updateQuote();
+  }, [mode, updateQuote]);
+
+  useEffect(() => {
+    if (!running || mode === "done") return;
+    const id = setInterval(() => {
+      updateQuote();
+    }, 3 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [running, mode, updateQuote]);
+
+  return (
+    <div className={`quote-container ${fade ? "fade-in" : "fade-out"}`}>
+      {quote}
+    </div>
+  );
+}
+
 /* ---------------- Task session — real pomodoro cycles against the estimate ---------------- */
 const PHASE_META = {
   work: { label: "Enfoque", color: "#95C84F" },
@@ -572,14 +630,16 @@ function TaskSessionCard({ task, onToggleRunning, onExtend, onComplete, onMiss, 
           </button>
         </div>
 
-        <div className="timer-controls" style={{ marginTop: 10 }}>
-          <button className="btn btn-primary" onClick={onComplete}><Check size={15} /> Completar</button>
-          <button className="btn btn-ghost" onClick={onMiss}><X size={15} /> Perdida</button>
-          <button className="btn btn-ghost" onClick={onCancel}><Ban size={14} /> Cancelar</button>
+          <div className="timer-controls" style={{ marginTop: 10 }}>
+            <button className="btn btn-primary" onClick={onComplete}><Check size={15} /> Completar</button>
+            <button className="btn btn-ghost" onClick={onMiss}><X size={15} /> Perdida</button>
+            <button className="btn btn-ghost" onClick={onCancel}><Ban size={14} /> Cancelar</button>
+          </div>
+
+          <MotivationalQuote mode={task.phase} running={task.running} />
         </div>
       </div>
-    </div>
-  );
+    );
 }
 
 /* ---------------- Free-form Pomodoro (no task attached) ---------------- */
@@ -649,17 +709,19 @@ function PomodoroPanel({ settings, setSettings, sessionsCompleted, setSessionsCo
           <div className="time-display">{fmtClock(secondsLeft)}</div>
         </div>
 
-        <div className="timer-controls">
-          <button className="btn btn-primary" onClick={() => setRunning((r) => !r)}>
-            {running ? <Pause size={15} /> : <Play size={15} />} {running ? "Pausar" : "Iniciar"}
-          </button>
-          <button className="btn btn-ghost" onClick={() => { setRunning(false); setSecondsLeft(durationsMin[mode] * 60); }}>
-            <RotateCcw size={15} /> Reiniciar
-          </button>
-          <button className="btn btn-ghost" onClick={() => setShowSettings((s) => !s)}>
-            <Settings2 size={15} />
-          </button>
-        </div>
+          <div className="timer-controls">
+            <button className="btn btn-primary" onClick={() => setRunning((r) => !r)}>
+              {running ? <Pause size={15} /> : <Play size={15} />} {running ? "Pausar" : "Iniciar"}
+            </button>
+            <button className="btn btn-ghost" onClick={() => { setRunning(false); setSecondsLeft(durationsMin[mode] * 60); }}>
+              <RotateCcw size={15} /> Reiniciar
+            </button>
+            <button className="btn btn-ghost" onClick={() => setShowSettings((s) => !s)}>
+              <Settings2 size={15} />
+            </button>
+          </div>
+
+          <MotivationalQuote mode={mode} running={running} />
 
         <div className="stat-row" style={{ marginTop: 22 }}>
           <div className="stat"><span className="stat-num">{sessionsCompleted}</span><span className="stat-label">sesiones de enfoque completadas</span></div>
