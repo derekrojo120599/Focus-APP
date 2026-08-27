@@ -112,8 +112,8 @@ function Companion({ level, mood, size = 176 }) {
   const bodyColor = MOOD_COLOR[mood];
   const tilt = mood === "sad" ? -6 : mood === "happy" ? 2 : 0;
 
-  const leafPairs = Math.min(level, 6);
-  const bodyR = 26 + Math.min(level, 8) * 2;
+  // Gamification elements scale with level
+  const bodyR = 28 + Math.min(level, 8) * 1.5; // Slightly larger base for the owl body
   const flowerCount = level >= 5 ? Math.min(level - 4, 8) : 0;
   const fruitCount = level >= 10 ? Math.min(level - 9, 6) : 0;
   const auraRings = level >= 12 ? Math.min(Math.floor((level - 11) / 2) + 1, 4) : 0;
@@ -130,76 +130,98 @@ function Companion({ level, mood, size = 176 }) {
         </div>
       )}
       <svg width={size} height={size} viewBox="0 0 200 200" className="companion-svg" style={{ "--tilt": `${tilt}deg` }}>
-        <ellipse cx="100" cy="192" rx="42" ry="6" fill="#000" opacity="0.28" />
-        <path d="M 70 168 L 130 168 L 122 190 L 78 190 Z" fill="#8B5E3C" />
-        <path d="M 70 168 L 130 168 L 127 176 L 73 176 Z" fill="#71492E" opacity="0.6" />
-        <rect x="66" y="160" width="68" height="10" rx="3" fill="#6E4A2F" />
+        <ellipse cx="100" cy="170" rx="42" ry="6" fill="#000" opacity="0.28" />
 
         {Array.from({ length: auraRings }).map((_, i) => (
           <circle
-            key={`ring-${i}`} cx="100" cy="90" r={bodyR + 26 + i * 13} fill="none"
+            key={`ring-${i}`} cx="100" cy="95" r={bodyR + 26 + i * 13} fill="none"
             stroke={auraPalette[i % auraPalette.length]} strokeWidth="2" opacity="0.35"
             className="aura-ring" style={{ animationDelay: `${i * 0.4}s` }}
           />
         ))}
 
         {Array.from({ length: orbitCount }).map((_, i) => {
-          const [x, y] = polar(100, 88, bodyR + 42, (360 / orbitCount) * i - 90);
+          const [x, y] = polar(100, 95, bodyR + 42, (360 / orbitCount) * i - 90);
           return (
             <circle key={`orbit-${i}`} cx={x} cy={y} r="3.2" fill="#F4D58D" className="orbit-spark" style={{ animationDelay: `${i * 0.3}s` }} />
           );
         })}
 
         <g className="companion-plant">
-          <line x1="100" y1="160" x2="100" y2="120" stroke="#4F7A4C" strokeWidth="5" strokeLinecap="round" />
-          {Array.from({ length: leafPairs }).map((_, i) => {
-            const y = 152 - i * 14;
-            return (
-              <g key={i}>
-                <path d={`M 100 ${y} Q 78 ${y - 8} 82 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#5B8C5A" />
-                <path d={`M 100 ${y} Q 122 ${y - 8} 118 ${y - 20} Q 100 ${y - 14} 100 ${y} Z`} fill="#6FA96C" />
-              </g>
-            );
-          })}
+          {/* Owl Feet */}
+          <ellipse cx={100 - bodyR * 0.4} cy={95 + bodyR * 1.05} rx={bodyR * 0.25} ry={bodyR * 0.1} fill="#FFC800" />
+          <ellipse cx={100 + bodyR * 0.4} cy={95 + bodyR * 1.05} rx={bodyR * 0.25} ry={bodyR * 0.1} fill="#FFC800" />
+          
+          {/* Owl Wings */}
+          <path d={`M ${100 - bodyR} ${95} Q ${100 - bodyR - 20} ${95 + bodyR*0.6} ${100 - bodyR + 5} ${95 + bodyR - 2} Z`} fill={bodyColor} />
+          <path d={`M ${100 + bodyR} ${95} Q ${100 + bodyR + 20} ${95 + bodyR*0.6} ${100 + bodyR - 5} ${95 + bodyR - 2} Z`} fill={bodyColor} />
 
-          {Array.from({ length: flowerCount }).map((_, i) => {
-            const [x, y] = polar(100, 82, bodyR + 14, (360 / flowerCount) * i - 90);
-            return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#FFE14F" stroke="#12201A" strokeWidth="0.5" />;
-          })}
-
-          {Array.from({ length: fruitCount }).map((_, i) => {
-            const angle = 60 + (60 / Math.max(fruitCount - 1, 1)) * i;
-            const [x, y] = polar(100, 92, bodyR + 6, angle);
-            return <circle key={`fruit-${i}`} cx={x} cy={y} r="4.5" fill="#D9857A" />;
-          })}
-
-          {hasCrown && (
-            <g transform={`translate(100, ${64 - bodyR})`}>
-              <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="#F4D58D" stroke="#E7A33E" strokeWidth="1" />
-              <circle cx="0" cy="-9" r="2.4" fill="#E7A33E" />
-              <circle cx="-9" cy="-6" r="2" fill="#E7A33E" />
-              <circle cx="9" cy="-6" r="2" fill="#E7A33E" />
-            </g>
-          )}
-
-          <circle cx="100" cy="90" r={bodyR} fill={bodyColor} className="companion-body" />
-          <circle cx="100" cy="90" r={bodyR} fill="url(#sheen)" opacity="0.25" />
+          {/* Owl Body Base */}
+          <rect x={100 - bodyR} y={95 - bodyR} width={bodyR * 2} height={bodyR * 2.1} rx={bodyR * 0.9} fill={bodyColor} />
+          <rect x={100 - bodyR} y={95 - bodyR} width={bodyR * 2} height={bodyR * 2.1} rx={bodyR * 0.9} fill="url(#sheen)" opacity="0.25" />
+          
           <defs>
             <radialGradient id="sheen" cx="35%" cy="30%" r="60%">
               <stop offset="0%" stopColor="#ffffff" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </radialGradient>
           </defs>
-          <circle cx={100 - bodyR * 0.4} cy="86" r="5" fill="#12201A" />
-          <circle cx={100 + bodyR * 0.4} cy="86" r="5" fill="#12201A" />
-          {mood === "happy" && (
-            <path d={`M ${100 - bodyR * 0.35} ${98} Q 100 ${112} ${100 + bodyR * 0.35} ${98}`} stroke="#12201A" strokeWidth="4" fill="none" strokeLinecap="round" />
+
+          {/* Belly & Face Mask */}
+          <g fill="white" opacity="0.6">
+             <rect x={100 - bodyR*0.8} y={95 - bodyR*0.3} width={bodyR*1.6} height={bodyR*1.15} rx={bodyR*0.5} />
+             <circle cx={100 - bodyR*0.35} cy={95 - bodyR*0.2} r={bodyR*0.48} />
+             <circle cx={100 + bodyR*0.35} cy={95 - bodyR*0.2} r={bodyR*0.48} />
+          </g>
+
+          {/* Eyes Base */}
+          <circle cx={100 - bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.35} fill="white" />
+          <circle cx={100 + bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.35} fill="white" />
+          
+          {/* Pupils & Eye Expressions */}
+          {mood === "sad" ? (
+            <g>
+              <circle cx={100 - bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.15} fill="#12201A" />
+              <circle cx={100 + bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.15} fill="#12201A" />
+              {/* Drooping Eyelids */}
+              <path d={`M ${100 - bodyR * 0.75} ${95 - bodyR * 0.5} Q ${100 - bodyR * 0.35} ${95 - bodyR * 0.1} ${100} ${95 - bodyR * 0.5} Z`} fill={bodyColor} />
+              <path d={`M ${100} ${95 - bodyR * 0.5} Q ${100 + bodyR * 0.35} ${95 - bodyR * 0.1} ${100 + bodyR * 0.75} ${95 - bodyR * 0.5} Z`} fill={bodyColor} />
+            </g>
+          ) : mood === "happy" ? (
+            <g>
+              {/* Happy curved eyes */}
+              <path d={`M ${100 - bodyR * 0.55} ${95 - bodyR * 0.2} Q ${100 - bodyR * 0.35} ${95 - bodyR * 0.45} ${100 - bodyR * 0.15} ${95 - bodyR * 0.2}`} stroke="#12201A" strokeWidth="4" fill="none" strokeLinecap="round" />
+              <path d={`M ${100 + bodyR * 0.15} ${95 - bodyR * 0.2} Q ${100 + bodyR * 0.35} ${95 - bodyR * 0.45} ${100 + bodyR * 0.55} ${95 - bodyR * 0.2}`} stroke="#12201A" strokeWidth="4" fill="none" strokeLinecap="round" />
+            </g>
+          ) : (
+            <g>
+              <circle cx={100 - bodyR * 0.3} cy={95 - bodyR * 0.2} r={bodyR * 0.15} fill="#12201A" />
+              <circle cx={100 + bodyR * 0.3} cy={95 - bodyR * 0.2} r={bodyR * 0.15} fill="#12201A" />
+            </g>
           )}
-          {mood === "neutral" && (
-            <line x1={100 - bodyR * 0.3} y1="102" x2={100 + bodyR * 0.3} y2="102" stroke="#12201A" strokeWidth="4" strokeLinecap="round" />
-          )}
-          {mood === "sad" && (
-            <path d={`M ${100 - bodyR * 0.35} ${106} Q 100 ${94} ${100 + bodyR * 0.35} ${106}`} stroke="#12201A" strokeWidth="4" fill="none" strokeLinecap="round" />
+
+          {/* Beak */}
+          <path d={`M 92 ${95 + bodyR * 0.05} L 108 ${95 + bodyR * 0.05} L 100 ${95 + bodyR * 0.25} Z`} fill="#FFC800" stroke="#E5B200" strokeWidth="1" strokeLinejoin="round" />
+
+          {/* Floating Gamification Elements */}
+          {Array.from({ length: flowerCount }).map((_, i) => {
+            const [x, y] = polar(100, 95, bodyR + 24, (360 / flowerCount) * i - 90);
+            return <circle key={`flower-${i}`} cx={x} cy={y} r="6.5" fill="#FFE14F" stroke="#12201A" strokeWidth="0.5" />;
+          })}
+
+          {Array.from({ length: fruitCount }).map((_, i) => {
+            const angle = 60 + (60 / Math.max(fruitCount - 1, 1)) * i;
+            const [x, y] = polar(100, 95, bodyR + 32, angle);
+            return <circle key={`fruit-${i}`} cx={x} cy={y} r="4.5" fill="#D9857A" />;
+          })}
+
+          {hasCrown && (
+            <g transform={`translate(100, ${95 - bodyR - 10})`}>
+              <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="#F4D58D" stroke="#E7A33E" strokeWidth="1" />
+              <circle cx="0" cy="-9" r="2.4" fill="#E7A33E" />
+              <circle cx="-9" cy="-6" r="2" fill="#E7A33E" />
+              <circle cx="9" cy="-6" r="2" fill="#E7A33E" />
+            </g>
           )}
         </g>
       </svg>
