@@ -108,7 +108,7 @@ function polar(cx, cy, r, deg) {
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
-function Companion({ level, mood, size = 176 }) {
+function Companion({ level, mood, size = 240 }) {
   const bodyColor = MOOD_COLOR[mood];
   const tilt = mood === "sad" ? -6 : mood === "happy" ? 2 : 0;
 

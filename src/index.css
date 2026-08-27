@@ -9,6 +9,8 @@ body { overscroll-behavior-x: none; -webkit-touch-callout: none; }
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: radial-gradient(circle at 12% -10%, #2F4A33 0%, #14231A 60%), #12201A;
   color: #FBF6E3;
   font-family: 'Inter', sans-serif;
@@ -25,7 +27,7 @@ body { overscroll-behavior-x: none; -webkit-touch-callout: none; }
 
 .app-shell {
   position: relative; z-index: 1;
-  max-width: 1440px; margin: 0 auto;
+  width: 100%; max-width: 1200px; margin: auto;
   display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start;
 }
 @media (max-width: 900px) {
