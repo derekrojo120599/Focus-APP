@@ -78,7 +78,7 @@ body { overscroll-behavior-x: none; -webkit-touch-callout: none; }
     min-height: 0;
   }
   .companion-card .eyebrow { margin-bottom: 2px; }
-  .companion-card svg { width: 115px; height: 115px; margin: -5px 0; }
+  .companion-card svg { width: 180px; height: 180px; margin: 0 auto; }
   .companion-card .stage-name { font-size: 16px; margin-top: 2px; }
   .companion-card .mood-pill { margin-top: 2px; }
   .companion-card .evolve-track-wrap { margin-top: 8px; }
