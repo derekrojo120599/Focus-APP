@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { X, Mail, Lock, LogIn, UserPlus, Loader2 } from 'lucide-react';
 
@@ -30,13 +30,13 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
           password,
         });
         if (error) throw error;
-        setSuccessMsg("¡Listo! Revisa tu correo pa' confirmar la cuenta (si el envío de correos está activado en Supabase) o inicia sesión de una.");
+        setSuccessMsg("Â¡Listo! Revisa tu correo pa' confirmar la cuenta (si el envÃ­o de correos estÃ¡ activado en Supabase) o inicia sesiÃ³n de una.");
         if (data.session && onAuthSuccess) {
           onAuthSuccess(data.user);
         }
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Hubo un peo, revisá tus datos.');
+      setErrorMsg(err.message || 'Hubo un peo, revisÃ¡ tus datos.');
     } finally {
       setLoading(false);
     }
@@ -51,10 +51,10 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
             {isLogin ? <LogIn size={28}/> : <UserPlus size={28}/>}
           </div>
           <h2 style={{ margin: 0, color: 'var(--cream)', fontSize: '1.5rem', fontWeight: 600 }}>
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            {isLogin ? 'Iniciar SesiÃ³n' : 'Crear Cuenta'}
           </h2>
           <p style={{ color: 'var(--sage)', fontSize: '0.9rem', marginTop: '6px' }}>
-            {isLogin ? 'Bienvenido de vuelta, compañero.' : 'Únete y guarda tu progreso en la nube.'}
+            {isLogin ? 'Bienvenido de vuelta, compaÃ±ero.' : 'Ãšnete y guarda tu progreso en la nube.'}
           </p>
         </div>
         
@@ -72,7 +72,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', color: 'var(--beige)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 500 }}>Correo Electrónico</label>
+            <label style={{ display: 'block', color: 'var(--beige)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 500 }}>Correo ElectrÃ³nico</label>
             <div style={{ display: 'flex', alignItems: 'center', background: 'var(--raised)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--sage)', transition: 'border-color 0.2s' }} className="input-wrap">
               <Mail size={16} color="var(--sage)" style={{ marginRight: '10px' }}/>
               <input 
@@ -87,7 +87,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: 'var(--beige)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 500 }}>Contraseña</label>
+            <label style={{ display: 'block', color: 'var(--beige)', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 500 }}>ContraseÃ±a</label>
             <div style={{ display: 'flex', alignItems: 'center', background: 'var(--raised)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--sage)', transition: 'border-color 0.2s' }} className="input-wrap">
               <Lock size={16} color="var(--sage)" style={{ marginRight: '10px' }}/>
               <input 
@@ -96,7 +96,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 style={{ background: 'transparent', border: 'none', color: 'var(--cream)', width: '100%', outline: 'none', fontSize: '0.95rem' }}
-                placeholder="••••••••"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
               />
             </div>
           </div>
@@ -120,11 +120,11 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--sage)' }}>
-          {isLogin ? "¿No tenés cuenta? " : "¿Ya tenés cuenta? "}
+          {isLogin ? "Â¿No tenÃ©s cuenta? " : "Â¿Ya tenÃ©s cuenta? "}
           <button 
             onClick={() => { setIsLogin(!isLogin); setErrorMsg(null); setSuccessMsg(null); setEmail(''); setPassword(''); }}
             style={{ background: 'transparent', border: 'none', color: 'var(--highlight)', cursor: 'pointer', fontWeight: 500, padding: '4px' }}>
-            {isLogin ? "Regístrate gratis" : "Inicia sesión"}
+            {isLogin ? "RegÃ­strate gratis" : "Inicia sesiÃ³n"}
           </button>
         </div>
       </div>

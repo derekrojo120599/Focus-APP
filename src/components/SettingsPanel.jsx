@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Settings, Moon, Sun, User, LogOut } from "lucide-react";
 import { supabase } from "../utils/supabaseClient";
 
@@ -9,13 +9,13 @@ export default function SettingsPanel({ settings, setSettings, theme, setTheme, 
         <Settings size={20} color="var(--sage)" /> Opciones del Sistema
       </h2>
       <p style={{ color: "var(--beige)", marginBottom: "2rem" }}>
-        Personalizá tu refugio pa' que estéis lo más cómodo posible.
+        PersonalizÃ¡ tu refugio pa' que estÃ©is lo mÃ¡s cÃ³modo posible.
       </p>
 
       <section style={{ marginBottom: "2.5rem" }}>
         <h3 style={{ fontSize: "1.1rem", color: "var(--olive)", marginBottom: "1rem" }}>Tiempos del Pomodoro (Minutos)</h3>
         <p style={{ fontSize: "0.85rem", color: "var(--sage)", marginBottom: "1rem" }}>
-          Estos tiempos también controlan cómo se dividen los ciclos automáticos de tus tareas en curso.
+          Estos tiempos tambiÃ©n controlan cÃ³mo se dividen los ciclos automÃ¡ticos de tus tareas en curso.
         </p>
         <div className="settings-grid">
           <div>
@@ -78,30 +78,30 @@ export default function SettingsPanel({ settings, setSettings, theme, setTheme, 
           {user ? (
             <div>
               <p style={{ margin: "0 0 1rem 0", color: "var(--cream)", display: "flex", alignItems: "center", gap: 8 }}>
-                <User size={18} color="var(--olive)"/> Sesión iniciada como: <strong style={{ color: "var(--highlight)" }}>{user.email}</strong>
+                <User size={18} color="var(--olive)"/> SesiÃ³n iniciada como: <strong style={{ color: "var(--highlight)" }}>{user.email}</strong>
               </p>
               <p style={{ fontSize: "0.85rem", color: "var(--sage)", marginBottom: "1.5rem" }}>
-                Tu progreso y tareas se están guardando y sincronizando con la nube automáticamente.
+                Tu progreso y tareas se estÃ¡n guardando y sincronizando con la nube automÃ¡ticamente.
               </p>
               <button 
                 className="btn" 
                 onClick={() => supabase.auth.signOut()}
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255, 106, 71, 0.15)", color: "var(--clay)", border: "1px solid rgba(255, 106, 71, 0.3)", padding: "0.5rem 1rem" }}
               >
-                <LogOut size={16} /> Cerrar Sesión
+                <LogOut size={16} /> Cerrar SesiÃ³n
               </button>
             </div>
           ) : (
             <div>
               <p style={{ margin: "0 0 1rem 0", color: "var(--sage)" }}>
-                No has iniciado sesión. Tus datos solo se están guardando localmente en este navegador.
+                No has iniciado sesiÃ³n. Tus datos solo se estÃ¡n guardando localmente en este navegador.
               </p>
               <button 
                 className="btn btn-primary" 
                 onClick={() => setShowAuthModal(true)}
                 style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
               >
-                <User size={18} /> Iniciar Sesión o Registrarse
+                <User size={18} /> Iniciar SesiÃ³n o Registrarse
               </button>
             </div>
           )}
