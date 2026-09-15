@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
-  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User
+  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun
 } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -48,6 +48,14 @@ export default function App() {
   // Auth State
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Theme State
+  const [theme, setTheme] = useState(() => localStorage.getItem("focus_theme") || "dark");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("focus_theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -184,6 +192,10 @@ export default function App() {
 
             <div style={{ margin: "1rem 0", height: "1px", background: "var(--sage)", opacity: 0.2 }} />
             
+            <button className="nav-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <><Sun size={16} /> Modo Claro</> : <><Moon size={16} /> Modo Oscuro</>}
+            </button>
+
             {user ? (
               <button className="nav-btn" onClick={() => supabase.auth.signOut()}>
                 <User size={16} /> Cerrar Sesión
