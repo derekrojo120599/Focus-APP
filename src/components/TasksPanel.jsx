@@ -8,6 +8,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
   const [date, setDate] = useState(todayISO());
   const [duration, setDuration] = useState(30);
   const [catId, setCatId] = useState(categories[0]?.id || "");
+  const [priority, setPriority] = useState("media");
   const [filter, setFilter] = useState("all");
   const [showAddCat, setShowAddCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
@@ -22,13 +23,14 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
     setTasks((ts) => [
       ...ts,
       {
-        id: uid(), title: title.trim(), date, duration: Number(duration) || 0, type: catId, status: "pending",
+        id: uid(), title: title.trim(), date, duration: Number(duration) || 0, type: catId, priority, status: "pending",
         createdAt: Date.now(), startedAt: null, extensionsUsed: 0, notified30: false,
         phase: null, phaseSecondsLeft: 0, phaseTotalSeconds: 0, workedSeconds: 0, cyclesCompleted: 0, overtimeSeconds: 0, running: false,
       },
     ]);
     setTitle("");
     setDuration(30);
+    setPriority("media");
   }
   function setStatus(id, status) {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, status: t.status === status ? "pending" : status } : t)));
@@ -44,9 +46,18 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
     setShowAddCat(false);
   }
 
+  const priorityWeight = { alta: 3, media: 2, baja: 1 };
+
   const filtered = tasks
-    .filter((t) => filter === "all" || t.type === filter)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+    .filter((t) => filter === "all" || t.type === filter || (filter === "alta" && t.priority === "alta"))
+    .sort((a, b) => {
+      if (a.status === "in_progress" && b.status !== "in_progress") return -1;
+      if (b.status === "in_progress" && a.status !== "in_progress") return 1;
+      const wA = priorityWeight[a.priority] || 0;
+      const wB = priorityWeight[b.priority] || 0;
+      if (wA !== wB) return wB - wA;
+      return a.date < b.date ? 1 : -1;
+    });
 
   return (
     <>
@@ -65,14 +76,22 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
             <label className="field-label">DuraciÃ³n estimada (min)</label>
             <input type="number" min="1" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
-          <div>
-            <label className="field-label">Tipo</label>
-            <select value={catId} onChange={(e) => setCatId(e.target.value)}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <div>
+              <label className="field-label">Tipo</label>
+              <select value={catId} onChange={(e) => setCatId(e.target.value)}>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="field-label">Prioridad</label>
+              <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                <option value="baja">Baja</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+            <button className="btn btn-primary" onClick={addTask} style={{ alignSelf: 'flex-end', height: '36px' }}><Plus size={15} /> Añadir</button>
           </div>
-          <button className="btn btn-primary" onClick={addTask}><Plus size={15} /> AÃ±adir</button>
-        </div>
 
         <div style={{ marginTop: 14 }}>
           {!showAddCat ? (
@@ -93,6 +112,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
       <div className="card accent-peri">
         <div className="filters">
           <button className={`filter-chip ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>Todas</button>
+          <button className={`filter-chip ${filter === "alta" ? "active" : ""}`} onClick={() => setFilter("alta")} style={{ borderStyle: 'dashed' }}>Solo Altas</button>
           {categories.map((c) => (
             <button key={c.id} className={`filter-chip ${filter === c.id ? "active" : ""}`} onClick={() => setFilter(c.id)}>{c.name}</button>
           ))}
@@ -117,8 +137,11 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
               <div style={{ flex: 1 }}>
                 <div className="task-title">{t.title}</div>
                 <div className="task-meta">
-                  {t.date} Â· {t.duration} min estimados
+                  {t.date} • {t.duration} min estimados
                   {t.extensionsUsed > 0 && <span className="mono" style={{ marginLeft: 4 }}>(+{t.extensionsUsed}x{EXTENSION_MINUTES}min)</span>}
+                  {t.priority === 'alta' && <span className="status-tag" style={{ background: "rgba(255, 106, 71, 0.15)", color: "var(--clay)", marginLeft: 8 }}>ALTA</span>}
+                  {t.priority === 'media' && <span className="status-tag" style={{ background: "rgba(255, 225, 79, 0.15)", color: "var(--highlight)", marginLeft: 8 }}>MEDIA</span>}
+                  {t.priority === 'baja' && <span className="status-tag" style={{ background: "rgba(115, 160, 48, 0.15)", color: "var(--olive)", marginLeft: 8 }}>BAJA</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
                   {overdue && <span className="status-tag" style={{ background: "var(--clay-22)", color: "var(--clay)", marginLeft: 8 }}>vencida</span>}
                   {isActive && <span className="status-tag" style={{ background: "var(--highlight-22)", color: "var(--highlight)", marginLeft: 8 }}>en curso Â· {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
@@ -148,3 +171,4 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
     </>
   );
 }
+
