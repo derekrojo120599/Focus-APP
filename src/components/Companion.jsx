@@ -17,7 +17,7 @@ export default function Companion({ level, mood, size = 240 }) {
   // Mouse tracking for eyes
   useEffect(() => {
     const handleMouseMove = (e) => {
-      // Mapeamos la posiciÃ³n del ratÃ³n a un pequeÃ±o desplazamiento (-4 a +4 px)
+      // Mapeamos la posición del ratón a un pequeño desplazamiento (-4 a +4 px)
       const x = (e.clientX / window.innerWidth - 0.5) * 8;
       const y = (e.clientY / window.innerHeight - 0.5) * 8;
       setPupilOffset({ x, y });
@@ -47,7 +47,7 @@ export default function Companion({ level, mood, size = 240 }) {
       className={`companion-stage mood-${mood}`} 
       onClick={handleClick} 
       style={{ cursor: "pointer", position: "relative" }}
-      title="Â¡Hazme clic!"
+      title="¡¡Hazme clic!"
     >
       {/* Estilos locales para mantener el componente 100% portable */}
       <style>{`
@@ -136,7 +136,7 @@ export default function Companion({ level, mood, size = 240 }) {
               <circle cx={100 - bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.35} fill="white" />
               <circle cx={100 + bodyR * 0.35} cy={95 - bodyR * 0.2} r={bodyR * 0.35} fill="white" />
               
-              {/* Pupils & Eye Expressions (Animated with Mouse Tracking) */}
+              {/* Pupils & Eye Expressions (Aúnimated with Mouse Tracking) */}
               <g transform={`translate(${pupilOffset.x}, ${pupilOffset.y})`}>
                 {mood === "sad" ? (
                   <g>

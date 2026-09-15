@@ -6,7 +6,7 @@ export default function MotivationalQuote({ mode, running }) {
   const [fade, setFade] = useState(true);
 
   const pickQuote = useCallback(() => {
-    if (mode === "done") return "¡Tiempo cumplido! Gran esfuerzo.";
+    if (mode === "done") return "¡¡Tiempo cumplido! Gran esfuerzo.";
     const list = mode === "work" ? FOCUS_PHRASES : BREAK_PHRASES;
     return list[Math.floor(Math.random() * list.length)];
   }, [mode]);

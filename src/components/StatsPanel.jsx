@@ -35,7 +35,7 @@ export default function StatsPanel({ tasks, categories }) {
       <div className="card accent-moss chart-card">
         <span className="eyebrow" style={{ color: "var(--highlight)" }}>progreso mensual</span>
         {monthly.length === 0 ? (
-          <div className="empty">AÃºn no hay tareas completadas o perdidas para graficar.</div>
+          <div className="empty">Aún no hay tareas completadas o perdidas para graficar.</div>
         ) : (
           <div style={{ width: "100%", height: 300, marginTop: 12 }}>
             <ResponsiveContainer>
@@ -54,8 +54,8 @@ export default function StatsPanel({ tasks, categories }) {
       </div>
 
       <div className="card accent-moss">
-        <span className="eyebrow" style={{ color: "var(--highlight)" }}>por categorÃ­a</span>
-        {byCategory.length === 0 && <div className="empty">Sin datos todavÃ­a.</div>}
+        <span className="eyebrow" style={{ color: "var(--highlight)" }}>por categoría</span>
+        {byCategory.length === 0 && <div className="empty">Sin datos todavía.</div>}
         {byCategory.map((c) => {
           const total = c.completadas + c.perdidas;
           const pct = total ? Math.round((c.completadas / total) * 100) : 0;

@@ -71,7 +71,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Cargar datos de la nube cuando inicia sesiÃ³n
+  // Cargar datos de la nube cuando inicia sesión
   useEffect(() => {
     if (user) {
       pullCloudData(user.id).then((cloudData) => {
@@ -176,7 +176,7 @@ export default function App() {
             <span className="brand-mark"><Leaf size={18} /></span>
             <div>
               <div className="title">Refugio de Enfoque</div>
-              <div className="subtitle">crece una sesiÃ³n a la vez</div>
+              <div className="subtitle">crece una sesión a la vez</div>
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export default function App() {
           </nav>
 
           <div className="companion-card">
-            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compaÃ±ero Â· nivel {stage.level}</span>
+            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero Â· nivel {stage.level}</span>
             <Companion level={stage.level} mood={mood} />
             <div className="stage-name">{stage.name}</div>
             <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
@@ -209,7 +209,7 @@ export default function App() {
               <div className="evolve-label">
                 {stage.next
                   ? <>faltan <strong>{stage.toNext}</strong> tareas para {stage.next}</>
-                  : <>nivel mÃ¡ximo alcanzado ðŸŽ‰</>}
+                  : <>nivel máximo alcanzado ðŸŽ‰</>}
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function App() {
           <div className="quick-stats">
             <div className="qstat"><span className="qnum" style={{ color: "var(--olive)" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
             <div className="qstat"><span className="qnum" style={{ color: "var(--clay)" }}>{missedCount}</span><span className="qlabel">perdidas</span></div>
-            <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">Ã©xito</span></div>
+            <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">éxito</span></div>
           </div>
         </aside>
 

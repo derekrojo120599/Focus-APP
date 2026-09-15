@@ -18,35 +18,35 @@ export const EXTENSION_MINUTES = 15;
 export const WARNING_SECONDS = 30 * 60;
 
 export const STAGE_NAMES = [
-  "Semilla", "Brote", "RetoÃ±o", "Arbusto", "Ãrbol joven",
+  "Semilla", "Brote", "Retoño", "Arbusto", "Ãrbol joven",
   "Ãrbol floreciente", "Ãrbol en flor", "Ãrbol frondoso", "Ãrbol con frutos", "Ãrbol dorado",
   "Ãrbol luminoso", "Ãrbol resplandeciente", "Ãrbol ancestral", "Ãrbol sagrado", "Ãrbol celestial",
-  "Ãrbol mÃ­tico", "Ãrbol legendario", "Ãrbol eterno", "Ãrbol cÃ³smico", "Ãrbol del infinito",
+  "Ãrbol mítico", "Ãrbol legendario", "Ãrbol eterno", "Ãrbol cósmico", "Ãrbol del infinito",
   "Ãrbol de la eternidad",
 ];
 export const MAX_LEVEL = 20;
 
 export const MOOD_COLOR = { happy: "var(--olive)", neutral: "var(--sage)", sad: "var(--clay)" };
-export const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaÃ­do" };
+export const MOOD_LABEL = { happy: "contento", neutral: "estable", sad: "decaído" };
 
 export const FOCUS_PHRASES = [
-  "MantÃ©n el enfoque, fluye con la tarea.",
-  "Respira profundo y continÃºa.",
+  "Mantén el enfoque, fluye con la tarea.",
+  "Respira profundo y continúa.",
   "Un paso a la vez, sin prisa.",
-  "Tu atenciÃ³n es tu superpoder.",
+  "Tu atención es tu superpoder.",
   "El progreso se construye ahora mismo.",
-  "ConcÃ©ntrate en lo esencial.",
-  "EstÃ¡s exactamente donde necesitas estar."
+  "Concéntrate en lo esencial.",
+  "Estás exactamente donde necesitas estar."
 ];
 
 export const BREAK_PHRASES = [
-  "Toma un vaso de agua, hidrÃ¡tate.",
-  "Estira tus mÃºsculos y relaja los hombros.",
+  "Toma un vaso de agua, hidrátate.",
+  "Estira tus músculos y relaja los hombros.",
   "Descansa la vista, mira a lo lejos.",
   "Respira, te lo has ganado.",
-  "Descansa, tu mente tambiÃ©n necesita recargar.",
+  "Descansa, tu mente también necesita recargar.",
   "Desconecta unos minutos y disfruta la pausa.",
-  "Un breve respiro antes de volver con energÃ­a."
+  "Un breve respiro antes de volver con energía."
 ];
 
 export const PHASE_META = {

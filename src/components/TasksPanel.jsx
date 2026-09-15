@@ -65,7 +65,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
         <span className="eyebrow" style={{ color: "var(--sage)" }}>nueva tarea</span>
         <div className="form-grid">
           <div>
-            <label className="field-label">TÃ­tulo</label>
+            <label className="field-label">Título</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej. Redactar informe" onKeyDown={(e) => e.key === "Enter" && addTask()} />
           </div>
           <div>
@@ -73,7 +73,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">DuraciÃ³n estimada (min)</label>
+            <label className="field-label">Duración estimada (min)</label>
             <input type="number" min="1" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
             <div>
@@ -95,7 +95,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
 
         <div style={{ marginTop: 14 }}>
           {!showAddCat ? (
-            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddCat(true)}><Plus size={12} /> Nueva categorÃ­a</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddCat(true)}><Plus size={12} /> Nueva categoría</button>
           ) : (
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input type="text" style={{ width: 160 }} placeholder="Nombre" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
@@ -121,8 +121,8 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
         {filtered.length === 0 && (
           <div className="empty-state">
             <ListTodo size={48} />
-            <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>No hay tareas por aquÃ­</h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>AÃ±adÃ­ una arriba pa' empezar a darle caÃ±a.</p>
+            <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>No hay tareas por aquíí</h3>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>Añadí una arriba para comenzar.</p>
           </div>
         )}
 
@@ -156,7 +156,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
                   </button>
                 )}
                 {isActive && (
-                  <button className="icon-btn completed-active" title="Ver sesiÃ³n en curso" onClick={onGoToSession}>
+                  <button className="icon-btn completed-active" title="Ver sesión en curso" onClick={onGoToSession}>
                     <Timer size={14} />
                   </button>
                 )}

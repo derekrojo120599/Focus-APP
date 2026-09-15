@@ -48,7 +48,7 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
     <div className="card accent-amber">
       <span className="eyebrow">pomodoro libre</span>
       <div className="timer-wrap">
-        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaÃ±a <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automÃ¡ticos.</div>
+        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automáticos.</div>
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
           <button className={`mode-pill ${mode === "short" ? "active" : ""}`} onClick={() => setMode("short")}>Descanso corto</button>
