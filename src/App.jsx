@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
-  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun
+  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun, Settings
 } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -23,6 +23,7 @@ import Companion from "./components/Companion";
 import PomodoroPanel from "./components/PomodoroPanel";
 import TasksPanel from "./components/TasksPanel";
 import StatsPanel from "./components/StatsPanel";
+import SettingsPanel from "./components/SettingsPanel";
 import AuthModal from "./components/AuthModal";
 import { supabase } from "./utils/supabaseClient";
 import { pullCloudData, pushCloudDataDebounced } from "./utils/cloudSync";
@@ -187,24 +188,11 @@ export default function App() {
               <ListTodo size={16} /> Tareas {pendingCount > 0 && <span className="nav-count">{pendingCount}</span>}
             </button>
             <button className={`nav-btn ${tab === "stats" ? "active" : ""}`} onClick={() => setTab("stats")}>
-              <BarChart3 size={16} /> EstadÃ­sticas
+              <BarChart3 size={16} /> Estadísticas
             </button>
-
-            <div style={{ margin: "1rem 0", height: "1px", background: "var(--sage)", opacity: 0.2 }} />
-            
-            <button className="nav-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <><Sun size={16} /> Modo Claro</> : <><Moon size={16} /> Modo Oscuro</>}
+            <button className={`nav-btn ${tab === "settings" ? "active" : ""}`} onClick={() => setTab("settings")}>
+              <Settings size={16} /> Opciones
             </button>
-
-            {user ? (
-              <button className="nav-btn" onClick={() => supabase.auth.signOut()}>
-                <User size={16} /> Cerrar SesiÃ³n
-              </button>
-            ) : (
-              <button className="nav-btn" onClick={() => setShowAuthModal(true)}>
-                <User size={16} /> Iniciar SesiÃ³n
-              </button>
-            )}
           </nav>
 
           <div className="companion-card">
@@ -263,6 +251,16 @@ export default function App() {
             />
           )}
           {tab === "stats" && <StatsPanel tasks={tasks} categories={categories} />}
+          {tab === "settings" && (
+            <SettingsPanel 
+              settings={settings} 
+              setSettings={setSettings} 
+              theme={theme} 
+              setTheme={setTheme} 
+              user={user} 
+              setShowAuthModal={setShowAuthModal} 
+            />
+          )}
         </main>
       </div>
     </div>

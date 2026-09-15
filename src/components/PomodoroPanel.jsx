@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { Pause, Play, RotateCcw, Settings2 } from "lucide-react";
 import MotivationalQuote from "./MotivationalQuote";
 import { fmtClock } from "../utils/helpers";
@@ -8,7 +8,6 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
   const [mode, setMode] = useState("work");
   const [secondsLeft, setSecondsLeft] = useState(settings.work * 60);
   const [running, setRunning] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef(null);
   const durationsMin = { work: settings.work, short: settings.short, long: settings.long };
 
@@ -49,7 +48,7 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
     <div className="card accent-amber">
       <span className="eyebrow">pomodoro libre</span>
       <div className="timer-wrap">
-        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automáticos.</div>
+        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaÃ±a <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automÃ¡ticos.</div>
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
           <button className={`mode-pill ${mode === "short" ? "active" : ""}`} onClick={() => setMode("short")}>Descanso corto</button>
@@ -77,9 +76,6 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
           <button className="btn btn-ghost" onClick={() => { setRunning(false); setSecondsLeft(durationsMin[mode] * 60); }}>
             <RotateCcw size={15} /> Reiniciar
           </button>
-          <button className="btn btn-ghost" onClick={() => setShowSettings((s) => !s)}>
-            <Settings2 size={15} />
-          </button>
         </div>
 
         <MotivationalQuote mode={mode} running={running} />
@@ -90,7 +86,7 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
 
         {showSettings && (
           <div style={{ width: "100%", marginTop: 18 }}>
-            <label className="field-label">Duraciones (minutos) — también rigen los ciclos automáticos de las tareas</label>
+            <label className="field-label">Duraciones (minutos) â€” tambiÃ©n rigen los ciclos automÃ¡ticos de las tareas</label>
             <div className="settings-grid">
               <div>
                 <label className="field-label">Enfoque</label>
@@ -115,3 +111,4 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
     </div>
   );
 }
+
