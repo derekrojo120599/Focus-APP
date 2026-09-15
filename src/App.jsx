@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
-  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun, Settings
+  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun, Settings, Menu
 } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -37,7 +37,8 @@ import {
 --------------------------------------------------------- */
 export default function App() {
   const initial = useRef(loadData());
-  const [tab, setTab] = useState("pomodoro");
+  const [tab, setTabState] = useState("pomodoro");
+  function setTab(t) { setTabState(t); setMobileMenuOpen(false); }
   const [tasks, setTasks] = useState(initial.current?.tasks || []);
   const [categories, setCategories] = useState(
     initial.current?.categories?.length ? initial.current.categories : DEFAULT_CATEGORIES
@@ -49,6 +50,7 @@ export default function App() {
   // Auth State
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Theme State
   const [theme, setTheme] = useState(() => localStorage.getItem("focus_theme") || "dark");
@@ -170,8 +172,18 @@ export default function App() {
     <div className="app-root">
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       <div className="grain" />
+      {mobileMenuOpen && <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />}
       <div className="app-shell">
-        <aside className="sidebar">
+        <div className="mobile-header">
+          <div className="brand">
+            <span className="brand-mark"><Leaf size={18} /></span>
+            <div className="title">Refugio</div>
+          </div>
+          <button className="btn btn-ghost" onClick={() => setMobileMenuOpen(true)}>
+            <Menu size={24} />
+          </button>
+        </div>
+        <aside className={`sidebar ${mobileMenuOpen ? "open" : ""}`}>
           <div className="brand">
             <span className="brand-mark"><Leaf size={18} /></span>
             <div>
