@@ -83,30 +83,6 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
         <div className="stat-row" style={{ marginTop: 22 }}>
           <div className="stat"><span className="stat-num">{sessionsCompleted}</span><span className="stat-label">sesiones de enfoque completadas</span></div>
         </div>
-
-        {showSettings && (
-          <div style={{ width: "100%", marginTop: 18 }}>
-            <label className="field-label">Duraciones (minutos) â€” tambiÃ©n rigen los ciclos automÃ¡ticos de las tareas</label>
-            <div className="settings-grid">
-              <div>
-                <label className="field-label">Enfoque</label>
-                <input type="number" min="1" value={settings.work} onChange={(e) => setSettings({ ...settings, work: Number(e.target.value) || 1 })} />
-              </div>
-              <div>
-                <label className="field-label">Descanso corto</label>
-                <input type="number" min="1" value={settings.short} onChange={(e) => setSettings({ ...settings, short: Number(e.target.value) || 1 })} />
-              </div>
-              <div>
-                <label className="field-label">Descanso largo</label>
-                <input type="number" min="1" value={settings.long} onChange={(e) => setSettings({ ...settings, long: Number(e.target.value) || 1 })} />
-              </div>
-              <div>
-                <label className="field-label">Ciclos hasta descanso largo</label>
-                <input type="number" min="1" value={settings.longEvery} onChange={(e) => setSettings({ ...settings, longEvery: Number(e.target.value) || 1 })} />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
