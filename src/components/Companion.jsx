@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { MOOD_COLOR } from "../utils/constants";
 
 function polar(cx, cy, r, deg) {
@@ -17,7 +17,7 @@ export default function Companion({ level, mood, size = 240 }) {
   // Mouse tracking for eyes
   useEffect(() => {
     const handleMouseMove = (e) => {
-      // Mapeamos la posición del ratón a un pequeño desplazamiento (-4 a +4 px)
+      // Mapeamos la posiciÃ³n del ratÃ³n a un pequeÃ±o desplazamiento (-4 a +4 px)
       const x = (e.clientX / window.innerWidth - 0.5) * 8;
       const y = (e.clientY / window.innerHeight - 0.5) * 8;
       setPupilOffset({ x, y });
@@ -47,7 +47,7 @@ export default function Companion({ level, mood, size = 240 }) {
       className={`companion-stage mood-${mood}`} 
       onClick={handleClick} 
       style={{ cursor: "pointer", position: "relative" }}
-      title="¡Hazme clic!"
+      title="Â¡Hazme clic!"
     >
       {/* Estilos locales para mantener el componente 100% portable */}
       <style>{`
@@ -100,7 +100,7 @@ export default function Companion({ level, mood, size = 240 }) {
           {Array.from({ length: orbitCount }).map((_, i) => {
             const [x, y] = polar(100, 95, bodyR + 42, (360 / orbitCount) * i - 90);
             return (
-              <circle key={`orbit-${i}`} cx={x} cy={y} r="3.2" fill="#F4D58D" className="orbit-spark" style={{ animationDelay: `${i * 0.3}s` }} />
+              <circle key={`orbit-${i}`} cx={x} cy={y} r="3.2" fill="var(--highlight)" className="orbit-spark" style={{ animationDelay: `${i * 0.3}s` }} />
             );
           })}
 
@@ -178,7 +178,7 @@ export default function Companion({ level, mood, size = 240 }) {
 
             {hasCrown && (
               <g transform={`translate(100, ${95 - bodyR - 10})`}>
-                <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="#F4D58D" stroke="#E7A33E" strokeWidth="1" />
+                <path d="M -14 6 L -9 -9 L 0 1 L 9 -9 L 14 6 Z" fill="var(--highlight)" stroke="#E7A33E" strokeWidth="1" />
                 <circle cx="0" cy="-9" r="2.4" fill="#E7A33E" />
                 <circle cx="-9" cy="-6" r="2" fill="#E7A33E" />
                 <circle cx="9" cy="-6" r="2" fill="#E7A33E" />

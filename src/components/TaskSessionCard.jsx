@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Pause, Play, AlarmClock, Plus, Check, X, Ban } from "lucide-react";
 import MotivationalQuote from "./MotivationalQuote";
 import { WARNING_SECONDS, PHASE_META, EXTENSION_MINUTES, MAX_EXTENSIONS } from "../utils/constants";
@@ -15,7 +15,7 @@ export default function TaskSessionCard({ task, onToggleRunning, onExtend, onCom
 
   return (
     <div className="card accent-amber">
-      <span className="eyebrow">tarea en curso · ciclo {task.cyclesCompleted + 1}</span>
+      <span className="eyebrow">tarea en curso Â· ciclo {task.cyclesCompleted + 1}</span>
       <div className="timer-wrap">
         <div className="task-session-title">{task.title}</div>
         <div className="phase-pill" style={{ background: meta.color + "22", color: meta.color }}>{meta.label}</div>
@@ -44,7 +44,7 @@ export default function TaskSessionCard({ task, onToggleRunning, onExtend, onCom
 
         <div className="task-overall">
           <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${overallPct}%`, background: "#95C84F" }} />
+            <div className="progress-fill" style={{ width: `${overallPct}%`, background: "var(--olive)" }} />
           </div>
           <div className="task-overall-label">
             {Math.round(task.workedSeconds / 60)} / {task.duration} min trabajados en esta tarea
@@ -58,7 +58,7 @@ export default function TaskSessionCard({ task, onToggleRunning, onExtend, onCom
         )}
         {task.phase === "done" && (
           <div className="session-alert danger">
-            <AlarmClock size={14} /> Tiempo estimado cumplido — agrega tiempo o cierra la tarea
+            <AlarmClock size={14} /> Tiempo estimado cumplido â€” agrega tiempo o cierra la tarea
           </div>
         )}
 

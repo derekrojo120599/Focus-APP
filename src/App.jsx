@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User, Moon, Sun
 } from "lucide-react";
@@ -70,7 +70,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Cargar datos de la nube cuando inicia sesión
+  // Cargar datos de la nube cuando inicia sesiÃ³n
   useEffect(() => {
     if (user) {
       pullCloudData(user.id).then((cloudData) => {
@@ -97,7 +97,7 @@ export default function App() {
   const mood = getMood(tasks);
   const catById = useCallback((id) => categories.find((c) => c.id === id), [categories]);
 
-  // pomodoro engine tick — advances the active task's phase every second while running
+  // pomodoro engine tick â€” advances the active task's phase every second while running
   useEffect(() => {
     if (!activeTask || !activeTask.running) return;
     const id = setInterval(() => {
@@ -107,13 +107,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTask?.id, activeTask?.running, settings.work, settings.short, settings.long, settings.longEvery]);
 
-  // 30-minute-of-work-remaining warning — fires once per session (resets on extension)
+  // 30-minute-of-work-remaining warning â€” fires once per session (resets on extension)
   useEffect(() => {
     if (!activeTask) return;
     const remaining = activeTask.duration * 60 - activeTask.workedSeconds;
     if (remaining <= WARNING_SECONDS && remaining > 0 && !activeTask.notified30) {
       const msg = `Quedan ${Math.ceil(remaining / 60)} min de trabajo estimado para "${activeTask.title}".`;
-      fireBrowserNotification("⏰ Refugio de Enfoque", msg);
+      fireBrowserNotification("â° Refugio de Enfoque", msg);
       setBanner(msg);
       setTasks((ts) => ts.map((t) => (t.id === activeTask.id ? { ...t, notified30: true } : t)));
     }
@@ -175,19 +175,19 @@ export default function App() {
             <span className="brand-mark"><Leaf size={18} /></span>
             <div>
               <div className="title">Refugio de Enfoque</div>
-              <div className="subtitle">crece una sesión a la vez</div>
+              <div className="subtitle">crece una sesiÃ³n a la vez</div>
             </div>
           </div>
 
           <nav className="nav">
             <button className={`nav-btn ${tab === "pomodoro" ? "active" : ""}`} onClick={() => setTab("pomodoro")}>
-              <Timer size={16} /> Pomodoro {activeTask && <span className="nav-count nav-count-live">●</span>}
+              <Timer size={16} /> Pomodoro {activeTask && <span className="nav-count nav-count-live">â—</span>}
             </button>
             <button className={`nav-btn ${tab === "tasks" ? "active" : ""}`} onClick={() => setTab("tasks")}>
               <ListTodo size={16} /> Tareas {pendingCount > 0 && <span className="nav-count">{pendingCount}</span>}
             </button>
             <button className={`nav-btn ${tab === "stats" ? "active" : ""}`} onClick={() => setTab("stats")}>
-              <BarChart3 size={16} /> Estadísticas
+              <BarChart3 size={16} /> EstadÃ­sticas
             </button>
 
             <div style={{ margin: "1rem 0", height: "1px", background: "var(--sage)", opacity: 0.2 }} />
@@ -198,38 +198,38 @@ export default function App() {
 
             {user ? (
               <button className="nav-btn" onClick={() => supabase.auth.signOut()}>
-                <User size={16} /> Cerrar Sesión
+                <User size={16} /> Cerrar SesiÃ³n
               </button>
             ) : (
               <button className="nav-btn" onClick={() => setShowAuthModal(true)}>
-                <User size={16} /> Iniciar Sesión
+                <User size={16} /> Iniciar SesiÃ³n
               </button>
             )}
           </nav>
 
           <div className="companion-card">
-            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero · nivel {stage.level}</span>
+            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compaÃ±ero Â· nivel {stage.level}</span>
             <Companion level={stage.level} mood={mood} />
             <div className="stage-name">{stage.name}</div>
             <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
-              <Sparkles size={12} /> Ánimo {MOOD_LABEL[mood]}
+              <Sparkles size={12} /> Ãnimo {MOOD_LABEL[mood]}
             </span>
             <div className="evolve-track-wrap">
               <div className="progress-track evolve-track">
-                <div className="progress-fill" style={{ width: `${stage.progressPct}%`, background: "#95C84F" }} />
+                <div className="progress-fill" style={{ width: `${stage.progressPct}%`, background: "var(--olive)" }} />
               </div>
               <div className="evolve-label">
                 {stage.next
                   ? <>faltan <strong>{stage.toNext}</strong> tareas para {stage.next}</>
-                  : <>nivel máximo alcanzado 🎉</>}
+                  : <>nivel mÃ¡ximo alcanzado ðŸŽ‰</>}
               </div>
             </div>
           </div>
 
           <div className="quick-stats">
-            <div className="qstat"><span className="qnum" style={{ color: "#95C84F" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
-            <div className="qstat"><span className="qnum" style={{ color: "#FF6A47" }}>{missedCount}</span><span className="qlabel">perdidas</span></div>
-            <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">éxito</span></div>
+            <div className="qstat"><span className="qnum" style={{ color: "var(--olive)" }}>{completedCount}</span><span className="qlabel">completadas</span></div>
+            <div className="qstat"><span className="qnum" style={{ color: "var(--clay)" }}>{missedCount}</span><span className="qlabel">perdidas</span></div>
+            <div className="qstat"><span className="qnum">{completedCount + missedCount ? Math.round((completedCount / (completedCount + missedCount)) * 100) : 0}%</span><span className="qlabel">Ã©xito</span></div>
           </div>
         </aside>
 

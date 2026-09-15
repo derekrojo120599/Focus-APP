@@ -50,7 +50,21 @@ export function getMood(tasks) {
 export function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    let data = JSON.parse(raw);
+    
+    // Migrar colores hardcodeados a variables CSS para soportar temas
+    if (data && data.categories) {
+      data.categories = data.categories.map(c => {
+        let color = c.color;
+        if (color === "#95C84F") color = "var(--olive)";
+        else if (color === "#7BA07F") color = "var(--sage)";
+        else if (color === "#FFE14F") color = "var(--highlight)";
+        else if (color === "#FF6A47") color = "var(--clay)";
+        return { ...c, color };
+      });
+    }
+    return data;
   } catch (e) {
     return null;
   }

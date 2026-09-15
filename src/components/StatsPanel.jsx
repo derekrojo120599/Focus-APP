@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { monthKey, monthLabel } from "../utils/helpers";
 
@@ -33,17 +33,17 @@ export default function StatsPanel({ tasks, categories }) {
   return (
     <>
       <div className="card accent-moss chart-card">
-        <span className="eyebrow" style={{ color: "#FFE14F" }}>progreso mensual</span>
+        <span className="eyebrow" style={{ color: "var(--highlight)" }}>progreso mensual</span>
         {monthly.length === 0 ? (
-          <div className="empty">Aún no hay tareas completadas o perdidas para graficar.</div>
+          <div className="empty">AÃºn no hay tareas completadas o perdidas para graficar.</div>
         ) : (
           <div style={{ width: "100%", height: 300, marginTop: 12 }}>
             <ResponsiveContainer>
               <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#7BA07F" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--sage)" vertical={false} />
                 <XAxis dataKey="mes" stroke="#DED9B8" fontSize={12} axisLine={false} tickLine={false} />
                 <YAxis stroke="#DED9B8" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: "#1B3224", border: "1px solid #7BA07F", borderRadius: 10, fontSize: 12 }} cursor={{ fill: "#26402C" }} />
+                <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--sage)", borderRadius: 10, fontSize: 12 }} cursor={{ fill: "var(--raised)" }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="completadas" fill="#95C84F" radius={[6, 6, 0, 0]} name="Completadas" maxBarSize={40} />
                 <Bar dataKey="perdidas" fill="#FF6A47" radius={[6, 6, 0, 0]} name="Perdidas" maxBarSize={40} />
@@ -54,8 +54,8 @@ export default function StatsPanel({ tasks, categories }) {
       </div>
 
       <div className="card accent-moss">
-        <span className="eyebrow" style={{ color: "#FFE14F" }}>por categoría</span>
-        {byCategory.length === 0 && <div className="empty">Sin datos todavía.</div>}
+        <span className="eyebrow" style={{ color: "var(--highlight)" }}>por categorÃ­a</span>
+        {byCategory.length === 0 && <div className="empty">Sin datos todavÃ­a.</div>}
         {byCategory.map((c) => {
           const total = c.completadas + c.perdidas;
           const pct = total ? Math.round((c.completadas / total) * 100) : 0;
@@ -63,7 +63,7 @@ export default function StatsPanel({ tasks, categories }) {
             <div key={c.id} className="cat-row">
               <div className="cat-row-head">
                 <span className="cat-chip" style={{ background: c.color + "22", color: c.color }}>{c.name}</span>
-                <span className="mono cat-row-meta">{c.completadas} completadas · {c.perdidas} perdidas · {pct}%</span>
+                <span className="mono cat-row-meta">{c.completadas} completadas Â· {c.perdidas} perdidas Â· {pct}%</span>
               </div>
               <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${pct}%`, background: c.color }} />

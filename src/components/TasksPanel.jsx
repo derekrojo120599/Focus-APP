@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Plus, Play, Timer, Check, X, Trash2, ListTodo } from "lucide-react";
 import { todayISO, uid } from "../utils/helpers";
 import { COLOR_PRESETS, EXTENSION_MINUTES } from "../utils/constants";
@@ -51,10 +51,10 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
   return (
     <>
       <div className="card accent-peri">
-        <span className="eyebrow" style={{ color: "#7BA07F" }}>nueva tarea</span>
+        <span className="eyebrow" style={{ color: "var(--sage)" }}>nueva tarea</span>
         <div className="form-grid">
           <div>
-            <label className="field-label">Título</label>
+            <label className="field-label">TÃ­tulo</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej. Redactar informe" onKeyDown={(e) => e.key === "Enter" && addTask()} />
           </div>
           <div>
@@ -62,7 +62,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">Duración estimada (min)</label>
+            <label className="field-label">DuraciÃ³n estimada (min)</label>
             <input type="number" min="1" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
           <div>
@@ -71,12 +71,12 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <button className="btn btn-primary" onClick={addTask}><Plus size={15} /> Añadir</button>
+          <button className="btn btn-primary" onClick={addTask}><Plus size={15} /> AÃ±adir</button>
         </div>
 
         <div style={{ marginTop: 14 }}>
           {!showAddCat ? (
-            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddCat(true)}><Plus size={12} /> Nueva categoría</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddCat(true)}><Plus size={12} /> Nueva categorÃ­a</button>
           ) : (
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input type="text" style={{ width: 160 }} placeholder="Nombre" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
@@ -101,8 +101,8 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
         {filtered.length === 0 && (
           <div className="empty-state">
             <ListTodo size={48} />
-            <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>No hay tareas por aquí</h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>Añadí una arriba pa' empezar a darle caña.</p>
+            <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>No hay tareas por aquÃ­</h3>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>AÃ±adÃ­ una arriba pa' empezar a darle caÃ±a.</p>
           </div>
         )}
 
@@ -113,17 +113,17 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
           const blockedStart = t.status === "pending" && !!activeTaskId;
           return (
             <div className={`task-row ${isActive ? "task-row-active" : ""}`} key={t.id}>
-              <div className="task-bar" style={{ background: cat ? cat.color : "#7BA07F" }} />
+              <div className="task-bar" style={{ background: cat ? cat.color : "var(--sage)" }} />
               <div style={{ flex: 1 }}>
                 <div className="task-title">{t.title}</div>
                 <div className="task-meta">
-                  {t.date} · {t.duration} min estimados
+                  {t.date} Â· {t.duration} min estimados
                   {t.extensionsUsed > 0 && <span className="mono" style={{ marginLeft: 4 }}>(+{t.extensionsUsed}x{EXTENSION_MINUTES}min)</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
-                  {overdue && <span className="status-tag" style={{ background: "#FF6A4722", color: "#FF6A47", marginLeft: 8 }}>vencida</span>}
-                  {isActive && <span className="status-tag" style={{ background: "#FFE14F22", color: "#FFE14F", marginLeft: 8 }}>en curso · {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
-                  {t.status === "completed" && <span className="status-tag" style={{ background: "#95C84F22", color: "#95C84F", marginLeft: 8 }}>completada</span>}
-                  {t.status === "missed" && <span className="status-tag" style={{ background: "#FF6A4722", color: "#FF6A47", marginLeft: 8 }}>perdida</span>}
+                  {overdue && <span className="status-tag" style={{ background: "var(--clay-22)", color: "var(--clay)", marginLeft: 8 }}>vencida</span>}
+                  {isActive && <span className="status-tag" style={{ background: "var(--highlight-22)", color: "var(--highlight)", marginLeft: 8 }}>en curso Â· {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
+                  {t.status === "completed" && <span className="status-tag" style={{ background: "var(--olive-22)", color: "var(--olive)", marginLeft: 8 }}>completada</span>}
+                  {t.status === "missed" && <span className="status-tag" style={{ background: "var(--clay-22)", color: "var(--clay)", marginLeft: 8 }}>perdida</span>}
                 </div>
               </div>
               <div className="task-actions">
@@ -133,7 +133,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
                   </button>
                 )}
                 {isActive && (
-                  <button className="icon-btn completed-active" title="Ver sesión en curso" onClick={onGoToSession}>
+                  <button className="icon-btn completed-active" title="Ver sesiÃ³n en curso" onClick={onGoToSession}>
                     <Timer size={14} />
                   </button>
                 )}
