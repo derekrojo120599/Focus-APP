@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useRef } from "react";
-import { Pause, Play, RotateCcw, Settings2 } from "lucide-react";
+import { Pause, Play, RotateCcw, Settings2, Timer } from "lucide-react";
 import MotivationalQuote from "./MotivationalQuote";
 import { fmtClock } from "../utils/helpers";
 import TaskSessionCard from "./TaskSessionCard";
