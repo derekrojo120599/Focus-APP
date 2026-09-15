@@ -15,13 +15,13 @@ export default function TaskSessionCard({ task, onToggleRunning, onExtend, onCom
 
   return (
     <div className="card accent-amber">
-      <span className="eyebrow">tarea en curso Â· ciclo {task.cyclesCompleted + 1}</span>
+      <span className="eyebrow">tarea en curso • ciclo {task.cyclesCompleted + 1}</span>
       <div className="timer-wrap">
         <div className="task-session-title">{task.title}</div>
         <div className="phase-pill" style={{ background: meta.color + "22", color: meta.color }}>{meta.label}</div>
 
         <div className="ring-wrap">
-          <svg className="ring" viewBox="0 0 200 200">
+          <svg className="ring" viewBox="0 0 200 200" style={{ width: "100%", maxWidth: "250px", height: "auto", aspectRatio: "1/1" }}>
             <circle cx="100" cy="100" r="88" fill="none" stroke="#26402C" strokeWidth="10" />
             <circle
               cx="100" cy="100" r="88" fill="none" stroke={meta.color} strokeWidth="10" strokeLinecap="round"
@@ -68,13 +68,16 @@ export default function TaskSessionCard({ task, onToggleRunning, onExtend, onCom
           </button>
         </div>
 
-        <div className="timer-controls" style={{ marginTop: 10 }}>
+        <div className="timer-controls" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "16px" }}>
           <button className="btn btn-primary" onClick={onComplete}><Check size={15} /> Completar</button>
           <button className="btn btn-ghost" onClick={onMiss}><X size={15} /> Perdida</button>
           <button className="btn btn-ghost" onClick={onCancel}><Ban size={14} /> Cancelar</button>
         </div>
 
         <MotivationalQuote mode={task.phase} running={task.running} />
+        <div className="fullscreen-hint" style={{ textAlign: "center", fontSize: "11px", color: "var(--beige)", marginTop: "16px", opacity: 0.6 }}>
+          (En PC, pulsa F11 para pantalla completa)
+        </div>
       </div>
     </div>
   );

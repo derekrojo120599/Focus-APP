@@ -144,7 +144,7 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
                   {t.priority === 'baja' && <span className="status-tag" style={{ background: "rgba(115, 160, 48, 0.15)", color: "var(--olive)", marginLeft: 8 }}>BAJA</span>}
                   {cat && <span className="cat-chip" style={{ background: cat.color + "22", color: cat.color, marginLeft: 8 }}>{cat.name}</span>}
                   {overdue && <span className="status-tag" style={{ background: "var(--clay-22)", color: "var(--clay)", marginLeft: 8 }}>vencida</span>}
-                  {isActive && <span className="status-tag" style={{ background: "var(--highlight-22)", color: "var(--highlight)", marginLeft: 8 }}>en curso Â· {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
+                  {isActive && <span className="status-tag" style={{ background: "var(--highlight-22)", color: "var(--highlight)", marginLeft: 8 }}>en curso • {Math.round(t.workedSeconds / 60)}/{t.duration} min</span>}
                   {t.status === "completed" && <span className="status-tag" style={{ background: "var(--olive-22)", color: "var(--olive)", marginLeft: 8 }}>completada</span>}
                   {t.status === "missed" && <span className="status-tag" style={{ background: "var(--clay-22)", color: "var(--clay)", marginLeft: 8 }}>perdida</span>}
                 </div>

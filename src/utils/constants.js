@@ -18,11 +18,11 @@ export const EXTENSION_MINUTES = 15;
 export const WARNING_SECONDS = 30 * 60;
 
 export const STAGE_NAMES = [
-  "Semilla", "Brote", "Retoño", "Arbusto", "Ãrbol joven",
-  "Ãrbol floreciente", "Ãrbol en flor", "Ãrbol frondoso", "Ãrbol con frutos", "Ãrbol dorado",
-  "Ãrbol luminoso", "Ãrbol resplandeciente", "Ãrbol ancestral", "Ãrbol sagrado", "Ãrbol celestial",
-  "Ãrbol mítico", "Ãrbol legendario", "Ãrbol eterno", "Ãrbol cósmico", "Ãrbol del infinito",
-  "Ãrbol de la eternidad",
+  "Semilla", "Brote", "Retoño", "Arbusto", "Árbol joven",
+  "Árbol floreciente", "Árbol en flor", "Árbol frondoso", "Árbol con frutos", "Árbol dorado",
+  "Árbol luminoso", "Árbol resplandeciente", "Árbol ancestral", "Árbol sagrado", "Árbol celestial",
+  "Árbol mítico", "Árbol legendario", "Árbol eterno", "Árbol cósmico", "Árbol del infinito",
+  "Árbol de la eternidad",
 ];
 export const MAX_LEVEL = 20;
 

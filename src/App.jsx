@@ -208,11 +208,11 @@ export default function App() {
           </nav>
 
           <div className="companion-card">
-            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero Â· nivel {stage.level}</span>
+            <span className="eyebrow" style={{ color: MOOD_COLOR[mood] }}>tu compañero • nivel {stage.level}</span>
             <Companion level={stage.level} mood={mood} />
             <div className="stage-name">{stage.name}</div>
             <span className="mood-pill" style={{ background: MOOD_COLOR[mood] + "22", color: MOOD_COLOR[mood] }}>
-              <Sparkles size={12} /> Ãnimo {MOOD_LABEL[mood]}
+              <Sparkles size={12} /> Ánimo {MOOD_LABEL[mood]}
             </span>
             <div className="evolve-track-wrap">
               <div className="progress-track evolve-track">
@@ -278,5 +278,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
 

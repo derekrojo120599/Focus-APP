@@ -63,7 +63,7 @@ export default function StatsPanel({ tasks, categories }) {
             <div key={c.id} className="cat-row">
               <div className="cat-row-head">
                 <span className="cat-chip" style={{ background: c.color + "22", color: c.color }}>{c.name}</span>
-                <span className="mono cat-row-meta">{c.completadas} completadas Â· {c.perdidas} perdidas Â· {pct}%</span>
+                <span className="mono cat-row-meta">{c.completadas} completadas • {c.perdidas} perdidas • {pct}%</span>
               </div>
               <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${pct}%`, background: c.color }} />

@@ -48,7 +48,13 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
     <div className="card accent-amber">
       <span className="eyebrow">pomodoro libre</span>
       <div className="timer-wrap">
-        <div className="hint-note">Sin tarea vinculada. Inicia una tarea desde la pestaña <strong>Tareas</strong> para repartir su tiempo estimado en ciclos de pomodoro con descansos automáticos.</div>
+        
+        <div className="empty-state" style={{ marginTop: '24px' }}>
+          <Timer size={48} />
+          <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>Sin tarea vinculada</h3>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>Inicia una desde la pestaña <strong>Tareas</strong> para arrancar el Pomodoro.</p>
+        </div>
+  
         <div className="mode-pills">
           <button className={`mode-pill ${mode === "work" ? "active" : ""}`} onClick={() => setMode("work")}>Enfoque</button>
           <button className={`mode-pill ${mode === "short" ? "active" : ""}`} onClick={() => setMode("short")}>Descanso corto</button>
@@ -69,7 +75,7 @@ export default function PomodoroPanel({ settings, setSettings, sessionsCompleted
           <div className="time-display">{fmtClock(secondsLeft)}</div>
         </div>
 
-        <div className="timer-controls">
+        <div className="timer-controls" style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
           <button className="btn btn-primary" onClick={() => setRunning((r) => !r)}>
             {running ? <Pause size={15} /> : <Play size={15} />} {running ? "Pausar" : "Iniciar"}
           </button>
