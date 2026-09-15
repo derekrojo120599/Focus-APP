@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Play, Timer, Check, X, Trash2 } from "lucide-react";
+import { Plus, Play, Timer, Check, X, Trash2, ListTodo } from "lucide-react";
 import { todayISO, uid } from "../utils/helpers";
 import { COLOR_PRESETS, EXTENSION_MINUTES } from "../utils/constants";
 
@@ -98,7 +98,13 @@ export default function TasksPanel({ tasks, setTasks, categories, setCategories,
           ))}
         </div>
 
-        {filtered.length === 0 && <div className="empty">No hay tareas en esta vista todavía.</div>}
+        {filtered.length === 0 && (
+          <div className="empty-state">
+            <ListTodo size={48} />
+            <h3 style={{ margin: '8px 0 0 0', color: 'var(--cream)', fontSize: '1.1rem' }}>No hay tareas por aquí</h3>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>Añadí una arriba pa' empezar a darle caña.</p>
+          </div>
+        )}
 
         {filtered.map((t) => {
           const cat = catById(t.type);
