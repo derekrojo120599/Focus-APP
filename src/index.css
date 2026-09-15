@@ -218,3 +218,8 @@ label.field-label { font-size: 11px; color: #DED9B8; margin-bottom: 4px; display
 .cat-row-meta { color: #DED9B8; }
 .progress-track { height: 8px; background: #26402C; border-radius: 999px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+/* Modal Styles */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(18, 32, 26, 0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+.modal-content { background: var(--card); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; border: 1px solid var(--sage); position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--sage); cursor: pointer; transition: color 0.2s; }
+.modal-close:hover { color: var(--clay); }

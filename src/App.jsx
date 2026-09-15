@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
-  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock
+  Timer, ListTodo, BarChart3, X, Sparkles, Leaf, AlarmClock, User
 } from "lucide-react";
 
 /* ---------------------------------------------------------
@@ -23,8 +23,11 @@ import Companion from "./components/Companion";
 import PomodoroPanel from "./components/PomodoroPanel";
 import TasksPanel from "./components/TasksPanel";
 import StatsPanel from "./components/StatsPanel";
+import AuthModal from "./components/AuthModal";
+import { supabase } from "./utils/supabaseClient";
+import { pullCloudData, pushCloudDataDebounced } from "./utils/cloudSync";
 import {
-  getStage, getMood, loadData, saveData, requestNotifyPermission, fireBrowserNotification, startSessionFields, advanceTaskTick
+  getStage, getMood, loadData, requestNotifyPermission, fireBrowserNotification, startSessionFields, advanceTaskTick
 } from "./utils/helpers";
 
 
@@ -42,9 +45,41 @@ export default function App() {
   const [sessionsCompleted, setSessionsCompleted] = useState(initial.current?.sessionsCompleted || 0);
   const [banner, setBanner] = useState(null);
 
+  // Auth State
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   useEffect(() => {
-    saveData({ tasks, categories, settings, sessionsCompleted });
-  }, [tasks, categories, settings, sessionsCompleted]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) setShowAuthModal(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Cargar datos de la nube cuando inicia sesión
+  useEffect(() => {
+    if (user) {
+      pullCloudData(user.id).then((cloudData) => {
+        if (cloudData) {
+          if (cloudData.tasks) setTasks(cloudData.tasks);
+          if (cloudData.categories) setCategories(cloudData.categories);
+          if (cloudData.settings) setSettings(cloudData.settings);
+          if (cloudData.sessionsCompleted !== undefined) setSessionsCompleted(cloudData.sessionsCompleted);
+        }
+      });
+    }
+  }, [user]);
+
+  // Guardar (Local + Nube con debounce)
+  useEffect(() => {
+    pushCloudDataDebounced(user?.id, { tasks, categories, settings, sessionsCompleted });
+  }, [tasks, categories, settings, sessionsCompleted, user?.id]);
 
   const completedCount = useMemo(() => tasks.filter((t) => t.status === "completed").length, [tasks]);
   const missedCount = useMemo(() => tasks.filter((t) => t.status === "missed").length, [tasks]);
@@ -124,6 +159,7 @@ export default function App() {
 
   return (
     <div className="app-root">
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       <div className="grain" />
       <div className="app-shell">
         <aside className="sidebar">
@@ -145,6 +181,18 @@ export default function App() {
             <button className={`nav-btn ${tab === "stats" ? "active" : ""}`} onClick={() => setTab("stats")}>
               <BarChart3 size={16} /> Estadísticas
             </button>
+
+            <div style={{ margin: "1rem 0", height: "1px", background: "var(--sage)", opacity: 0.2 }} />
+            
+            {user ? (
+              <button className="nav-btn" onClick={() => supabase.auth.signOut()}>
+                <User size={16} /> Cerrar Sesión
+              </button>
+            ) : (
+              <button className="nav-btn" onClick={() => setShowAuthModal(true)}>
+                <User size={16} /> Iniciar Sesión
+              </button>
+            )}
           </nav>
 
           <div className="companion-card">
